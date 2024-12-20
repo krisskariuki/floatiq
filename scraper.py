@@ -10,11 +10,12 @@ from selenium.common.exceptions import WebDriverException,StaleElementReferenceE
 from flask import Flask,Response
 from flask_cors import CORS
 from datetime import datetime
+from colorama import Fore
 import time
 import pytz
 import os
 import json
-from colorama import Fore
+import argparse
 
 w=Fore.WHITE
 b=Fore.BLUE
@@ -24,14 +25,14 @@ m=Fore.MAGENTA
 c=Fore.CYAN
 
 class Scraper:
-    def __init__(self,url,credentials,headless=True):
+    def __init__(self,url,credentials,headless:bool):
         options=webdriver.ChromeOptions()
         service=Service(ChromeDriverManager().install())
         
         headmodeArgs=['--ignore-certificate-errors','--disable-notifications']
         headlessArgs=['--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',' --enable-unsafe-swiftshader']+headmodeArgs
         
-        sleepTime=1 if headless else 10
+        sleepTime=5 if headless else 10
         args=headlessArgs if headless else headmodeArgs
         
         for arg in args:
@@ -83,7 +84,7 @@ class Scraper:
         self.NAVIGATE()
         time.sleep(self.sleepTime)
 
-        if self.driver.find_element(By.XPATH,'//*[@class="payouts-block"]'):
+        if self.EVENT('class','payouts-block'):
             print(f'{g}process completed successfully{w}')
 
 
@@ -98,7 +99,7 @@ class Scraper:
                 if previousArray!=latestArray:
                     previousArray=latestArray
                     noise=float(latestArray[0].text.replace('x',''))
-                    dttm=datetime.now().timestamp()
+                    dttm=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
                     self.noise=noise
                     self.record={'noise':noise,'time':dttm}
@@ -113,4 +114,13 @@ class Scraper:
             
             time.sleep(1)
 
-Scraper('https://www.mozzartbet.co.ke/en#/',('0113294793','Chri570ph3r.'),False)
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description='used to determine in which mode - headless or browser to use in the scraping process')
+    parser.add_argument(
+        '--browse',
+        action='store_false',
+        help='use if you want a browser window to open'
+    )
+    args=parser.parse_args()
+
+    Scraper('https://www.mozzartbet.co.ke/en#/',('0113294793','Chri570ph3r.'),args.browse)
