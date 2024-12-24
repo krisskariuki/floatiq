@@ -1,39 +1,34 @@
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import WebDriverException,StaleElementReferenceException,NoSuchWindowException,TimeoutException
 
-from flask import Flask,Response
-from flask_cors import CORS
 from datetime import datetime
-from colorama import Fore
 import time
-import pytz
-import os
-import json
-import argparse
 
-w=Fore.WHITE
-b=Fore.BLUE
-g=Fore.GREEN
-r=Fore.RED
-m=Fore.MAGENTA
-c=Fore.CYAN
+class Action:
+    def __init__(self,action:str='locate',attribute:str='',delay:int=5,inputValue:str=None)->None:
+        self.action=action
+        self.attribute=attribute
+        self.delay=delay
+        self.inputValue=inputValue
 
-class Scraper:
-    def __init__(self,url,credentials,headless:bool):
+class Navigator:
+    def __init__(self,webUrl:str,headless:bool=False)->None:
+        self.webUrl=webUrl
+        self.data=None
         options=webdriver.ChromeOptions()
         service=Service(ChromeDriverManager().install())
         
         headmodeArgs=['--ignore-certificate-errors','--disable-notifications']
-        headlessArgs=['--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',' --enable-unsafe-swiftshader']+headmodeArgs
+        # headlessArgs=['--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',' --enable-unsafe-swiftshader']+headmodeArgs
         
-        sleepTime=5 if headless else 10
-        args=headlessArgs if headless else headmodeArgs
+        args=headmodeArgs
+        # args=headlessArgs if headless else headmodeArgs
         
         for arg in args:
             options.add_argument(arg)
@@ -41,86 +36,63 @@ class Scraper:
 
         self.driver=webdriver.Chrome(service=service,options=options)
 
-        self.url=url
-        self.phone=credentials[0]
-        self.password=credentials[1]
+    def action(self,action):
+        
+        def locate():
+            time.sleep(action.delay)
+            if not WebDriverWait(self.driver,60).until(EC.presence_of_element_located((By.XPATH,f'//*[@{action.attribute}]'))):
+                return "unable to locate an element with the provided attribute"
+            return True
+        
+        def click()->None:
+            time.sleep(action.delay)
+            WebDriverWait(self.driver,60).until(EC.element_to_be_clickable((By.XPATH,f'//*[@{action.attribute}]'))).click()
+        
+        def write()->None:
+            time.sleep(action.delay)
+            self.driver.find_element(By.XPATH,f'//*[@{action.attribute}]').send_keys(action.inputValue)
+        
+        def send()->None:
+            time.sleep(action.delay)
+            self.driver.find_element(By.XPATH,f'//*[@{action.attribute}]').send_keys(action.inputValue + Keys.RETURN)
+        
+        def extract()->None:
+            time.sleep(action.delay)
+            print(self.driver.find_element(By.XPATH,f'//*[@{action.attribute}]').text)
 
-        self.noise=''
-        self.record={}
-        self.series=[]
-        self.sleepTime=sleepTime
+        def loop()->None:
+            time.sleep(action.delay)
+            previousValues=None
+            dttm=None
 
-        self.SOURCE()
+            while True:
+                latestValues=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
 
-    def EVENT(self,attr='xpath',value='',method='click',click=False,timeout=60):
-        methods={'id':By.ID,'class':By.CLASS_NAME,'xpath':By.XPATH}
-        getBy={'locate':EC.presence_of_element_located((methods[attr],value)),'click':EC.element_to_be_clickable((methods[attr],value))}
-
-        result=WebDriverWait(self.driver,timeout).until(getBy[method]).click() if click else WebDriverWait(self.driver,timeout).until(getBy[method])
-
-        return result
-    
-    def NAVIGATE(self):
-        self.driver.get(self.url)
-        print(f'{c}navigating to {self.url}...{w}')
-
-        self.EVENT('xpath','//*[@class="mbet-icon active casino"]','click',True)
-        print(f'{c}logging in...{w}')
-        time.sleep(self.sleepTime)
-
-        self.EVENT('class','login-link','click',True)
-        time.sleep(self.sleepTime)
-
-        self.driver.find_element(By.XPATH,'//*[@placeholder="Mobile number"]').send_keys(self.phone)
-        self.driver.find_element(By.XPATH,'//*[@placeholder="Password"]').send_keys(self.password)
-
-        self.EVENT('class','login-button','click',True)
-        time.sleep(self.sleepTime)
-        print(f'{c}connecting to game engine...{w}')
-
-        self.EVENT('xpath','//*[@alt="Aviator"]','click',True)
-
-    def SOURCE(self):
-        self.NAVIGATE()
-        time.sleep(self.sleepTime)
-
-        if self.EVENT('class','payouts-block'):
-            print(f'{g}process completed successfully{w}')
-
-
-        previousArray=None
-        dttm=None
-
-        while True:
-            multipliersBlock=self.EVENT('class','payouts-block','locate')
-            latestArray=multipliersBlock.find_elements(By.CLASS_NAME,'bubble-multiplier')
-
-            try:
-                if previousArray!=latestArray:
-                    previousArray=latestArray
-                    noise=float(latestArray[0].text.replace('x',''))
+                if previousValues!=latestValues:
+                    previousValues=latestValues
+                    noise=float(latestValues[0].text.replace('x',''))
                     dttm=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+                    self.data={'noise':noise,'time':dttm}
+
+                    print(self.data)
+
+                time.sleep(0.5)
+        
+        actionHashMap={
+            'locate':locate,
+            'click':click,
+            'write':write,
+            'send':send,
+            'extract':extract,
+            'loop':loop
+            }
+        
+        return actionHashMap[action.action]()
+
     
-                    self.noise=noise
-                    self.record={'noise':noise,'time':dttm}
-                    self.series.append(self.record)
-                    
-                    print(f'{c}{self.record}{w}')
+    def navigate(self,actions):
+        self.driver.get(self.webUrl)
 
-            except (TimeoutException,StaleElementReferenceException,NoSuchWindowException,ValueError):
-                if 'session deleted because of page crash' in str(e):
-                    self.NAVIGATE()
-                else:raise
-            
-            time.sleep(1)
-
-if __name__=='__main__':
-    parser=argparse.ArgumentParser(description='used to determine in which mode - headless or browser to use in the scraping process')
-    parser.add_argument(
-        '--browse',
-        action='store_false',
-        help='use if you want a browser window to open'
-    )
-    args=parser.parse_args()
-
-    Scraper('https://www.mozzartbet.co.ke/en#/',('0113294793','Chri570ph3r.'),args.browse)
+        for action in actions:
+            self.action(action)
