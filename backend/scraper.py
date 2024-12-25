@@ -1,12 +1,4 @@
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import WebDriverException,StaleElementReferenceException,NoSuchWindowException,TimeoutException
-
+from selenium_imports import *
 from datetime import datetime
 import time
 
@@ -25,10 +17,10 @@ class Navigator:
         service=Service(ChromeDriverManager().install())
         
         headmodeArgs=['--ignore-certificate-errors','--disable-notifications']
-        # headlessArgs=['--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',' --enable-unsafe-swiftshader']+headmodeArgs
+        headlessArgs=['--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',' --enable-unsafe-swiftshader']+headmodeArgs
         
         args=headmodeArgs
-        # args=headlessArgs if headless else headmodeArgs
+        args=headlessArgs if headless else headmodeArgs
         
         for arg in args:
             options.add_argument(arg)
@@ -39,46 +31,48 @@ class Navigator:
     def action(self,action):
         
         def locate():
-            time.sleep(action.delay)
-            if not WebDriverWait(self.driver,60).until(EC.presence_of_element_located((By.XPATH,f'//*[@{action.attribute}]'))):
-                return "unable to locate an element with the provided attribute"
-            return True
+            element=WebDriverWait(self.driver,60).until(EC.presence_of_element_located((By.XPATH,f'//*[@{action.attribute}]')))
+            if not element:
+                print('no element with the provided attribute was found')
+            
+            print(f"element with the provided attribue was found : {element.get_attribute('outerHTML')}")
         
         def click()->None:
-            time.sleep(action.delay)
             WebDriverWait(self.driver,60).until(EC.element_to_be_clickable((By.XPATH,f'//*[@{action.attribute}]'))).click()
         
         def write()->None:
-            time.sleep(action.delay)
             self.driver.find_element(By.XPATH,f'//*[@{action.attribute}]').send_keys(action.inputValue)
         
         def send()->None:
-            time.sleep(action.delay)
             self.driver.find_element(By.XPATH,f'//*[@{action.attribute}]').send_keys(action.inputValue + Keys.RETURN)
         
         def extract()->None:
-            time.sleep(action.delay)
             print(self.driver.find_element(By.XPATH,f'//*[@{action.attribute}]').text)
 
         def loop()->None:
-            time.sleep(action.delay)
-            previousValues=None
+            previousMutipliers=None
             dttm=None
 
             while True:
-                latestValues=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
+                latestMultipliers=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
 
-                if previousValues!=latestValues:
-                    previousValues=latestValues
-                    noise=float(latestValues[0].text.replace('x',''))
+                if previousMutipliers!=latestMultipliers:
+                    previousMutipliers=latestMultipliers
+                    multiplier=float(latestMultipliers[0].text.replace('x',''))
+                    bets=self.driver.find_element(By.XPATH,'//*[@class="all-bets-block d-flex justify-content-between align-items-center px-2 pb-1"]').find_elements(By.XPATH,'.//div')[0].find_elements(By.XPATH,'.//div')[1].text
+
                     dttm=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-                    self.data={'noise':noise,'time':dttm}
+                    self.data={'time':dttm,'noise':multiplier,'bets':bets}
 
                     print(self.data)
 
                 time.sleep(0.5)
         
+        def apply_delay(function):
+            time.sleep(action.delay)
+            function()
+
         actionHashMap={
             'locate':locate,
             'click':click,
@@ -88,7 +82,7 @@ class Navigator:
             'loop':loop
             }
         
-        return actionHashMap[action.action]()
+        return apply_delay(actionHashMap[action.action])
 
     
     def navigate(self,actions):
