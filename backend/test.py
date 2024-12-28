@@ -1,6 +1,6 @@
 from scraper import Action,Navigator
 from datetime import datetime
-from flask import Flask,Response
+from flask import Flask,Response,jsonify
 from flask_cors import CORS
 import threading
 import time
@@ -11,6 +11,9 @@ CORS(app)
 
 record=None
 recordLock=threading.Lock()
+
+series=[]
+seriesLock=threading.Lock()
 
 
 def yield_data():
@@ -28,13 +31,22 @@ def yield_data():
         
         time.sleep(0.1)
 
-@app.route('/stream')
+@app.route('/raw/stream')
 def expose_data():
     return Response(yield_data(),content_type='text/event-stream')
 
+@app.route('/raw/latest')
+def latest():
+    global record
+    return record
+
+@app.route('/raw/history')
+def history():
+    return jsonify(series[::-1])
+
 def fetch_data():
     def loop(instance):
-        global record
+        global record,series
         driver=instance['driver']
         locator=instance['locator']
 
@@ -46,15 +58,18 @@ def fetch_data():
 
             if previousMutipliers!=latestMultipliers:
                 previousMutipliers=latestMultipliers
-                multiplier=float(latestMultipliers[0].text.replace('x',''))
+                multiplier=latestMultipliers[0].text.replace('x','')
                 bets=driver.find_element(locator.XPATH,'//*[@class="all-bets-block d-flex justify-content-between align-items-center px-2 pb-1"]').find_elements(locator.XPATH,'.//div')[0].find_elements(locator.XPATH,'.//div')[1].text
 
                 dttm=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-                data={'noise':multiplier,'bets':bets,'time':dttm}
+                data={'noise':float(multiplier),'bets':int(bets),'time':dttm}
 
                 with recordLock:
                     record=json.dumps(data,separators=(',',':'))
+
+                with seriesLock:
+                    series.append(data)
 
                 print(data)
 
