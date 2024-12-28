@@ -1,13 +1,15 @@
 from selenium_imports import *
 from datetime import datetime
 import time
+import threading
 
 class Action:
-    def __init__(self,action:str='locate',attribute:str='',delay:int=5,inputValue:str=None)->None:
+    def __init__(self,action:str='locate',attribute:str='',delay:int=5,inputValue:str=None,callback=None)->None:
         self.action=action
         self.attribute=attribute
         self.delay=delay
         self.inputValue=inputValue
+        self.callback=callback
 
 class Navigator:
     def __init__(self,webUrl:str,headless:bool=False)->None:
@@ -19,7 +21,6 @@ class Navigator:
         headmodeArgs=['--ignore-certificate-errors','--disable-notifications']
         headlessArgs=['--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',' --enable-unsafe-swiftshader']+headmodeArgs
         
-        args=headmodeArgs
         args=headlessArgs if headless else headmodeArgs
         
         for arg in args:
@@ -49,26 +50,9 @@ class Navigator:
         def extract()->None:
             print(self.driver.find_element(By.XPATH,f'//*[@{action.attribute}]').text)
 
-        def loop()->None:
-            previousMutipliers=None
-            dttm=None
+        def custom()->None:
+            threading.Thread(target=action.callback,args=({'driver':self.driver,'locator':By},)).start()
 
-            while True:
-                latestMultipliers=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
-
-                if previousMutipliers!=latestMultipliers:
-                    previousMutipliers=latestMultipliers
-                    multiplier=float(latestMultipliers[0].text.replace('x',''))
-                    bets=self.driver.find_element(By.XPATH,'//*[@class="all-bets-block d-flex justify-content-between align-items-center px-2 pb-1"]').find_elements(By.XPATH,'.//div')[0].find_elements(By.XPATH,'.//div')[1].text
-
-                    dttm=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-                    self.data={'time':dttm,'noise':multiplier,'bets':bets}
-
-                    print(self.data)
-
-                time.sleep(0.5)
-        
         def apply_delay(function):
             time.sleep(action.delay)
             function()
@@ -79,7 +63,7 @@ class Navigator:
             'write':write,
             'send':send,
             'extract':extract,
-            'loop':loop
+            'custom':custom
             }
         
         return apply_delay(actionHashMap[action.action])
