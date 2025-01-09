@@ -5,6 +5,7 @@ from flask_cors import CORS
 import threading
 import time
 import json
+import random
 
 app=Flask(__name__)
 CORS(app)
@@ -19,6 +20,7 @@ seriesLock=threading.Lock()
 def yield_data():
     global record
     localRecord=None
+    tempRecord=None
     
     while True:
         with recordLock:
@@ -26,10 +28,14 @@ def yield_data():
         
         if localRecord!=currentRecord:
             localRecord=currentRecord
-
             yield f'data: {record} \n\n'
         
-        time.sleep(0.1)
+        else:
+            tempRecord=record.copy()
+            tempRecord['noise']=random.uniform(-0.5,0.5)
+            yield f'data: {tempRecord}'
+        
+        time.sleep(1)
 
 @app.route('/raw/stream')
 def expose_data():
@@ -82,7 +88,7 @@ def fetch_data():
     Action(action='write',attribute='placeholder="Mobile number"',inputValue='0113294793'),
     Action(action='send',attribute='placeholder="Password"',inputValue='Chri570ph3r.',delay=0),
     Action(action='click',attribute='alt="Aviator"'),
-    Action(action='custom',callback=loop,delay=10)
+    Action(action='custom',callback=loop,delay=20)
     ]
     mozzartNavigator.navigate(mozzartActions)
 

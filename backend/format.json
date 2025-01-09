@@ -1,0 +1,29 @@
+{
+    "tokens":[
+    {"name":"bronze","alias":"BRNZ","flop":"1.50"},
+    {"name":"silver","alias":"SLVR","flop":"2.00"},
+    {"name":"gold","alias":"GOLD","flop":"3.00"},
+    {"name":"platinum","alias":"PLAT","flop":"5.00"},
+    {"name":"diamond","alias":"DIAM","flop":"10.00"},
+    {"name":"ruby","alias":"RUBY","flop":"15.00"},
+    {"name":"sapphire","alias":"SAPP","flop":"20.00"},
+    {"name":"emerald","alias":"EMRD","flop":"25.00"},
+    {"name":"amethyst","alias":"AMYT","flop":"30.00"},
+    {"name":"obsidian","alias":"OBSD","flop":"40.00"},
+    {"name":"onyx","alias":"ONYX","flop":"50.00"},
+    {"name":"crystal","alias":"CRYS","flop":"75.00"}
+    ],
+    "timeframes":[
+    {"name":"second30","unit":"second","interval":30},
+    {"name":"minute1","unit":"minute","interval":1},
+    {"name":"minute15","unit":"minute","interval":15},
+    {"name":"minute30","unit":"minute","interval":30},
+    {"name":"hour1","unit":"hour","interval":1},
+    {"name":"hour4","unit":"hour","interval":4},
+    {"name":"hour6","unit":"hour","interval":6},
+    {"name":"hour12","unit":"hour","interval":12},
+    {"name":"day1","unit":"day","interval":1},
+    {"name":"week1","unit":"week","interval":1},
+    {"name":"month1","unit":"month","interval":1}
+    ]
+}
