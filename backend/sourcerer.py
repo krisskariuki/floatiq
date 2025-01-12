@@ -20,7 +20,6 @@ seriesLock=threading.Lock()
 def yield_data():
     global record
     localRecord=None
-    tempRecord=None
     
     while True:
         with recordLock:
@@ -31,9 +30,12 @@ def yield_data():
             yield f'data: {record} \n\n'
         
         else:
-            tempRecord=record.copy()
-            tempRecord['noise']=random.uniform(-0.5,0.5)
-            yield f'data: {tempRecord}'
+            noise=round(random.uniform(-0.50,0.50),2)
+            bets=None
+            dttm=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            tempRecord={'noise':noise,'bets':bets,'time':dttm}
+
+            yield f"data: {json.dumps(tempRecord)}\n\n"
         
         time.sleep(1)
 
@@ -94,4 +96,4 @@ def fetch_data():
 
 fetch_data()
 threading.Thread(target=yield_data,daemon=True).start()
-app.run(threaded=True,host='0.0.0.0',port=8000)
+app.run(threaded=True,host='0.0.0.0',port=8080)
