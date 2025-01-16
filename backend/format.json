@@ -14,7 +14,6 @@
     {"name":"crystal","alias":"CRYS","flop":"75.00"}
     ],
     "timeframes":[
-    {"name":"second30","unit":"second","interval":30},
     {"name":"minute1","unit":"minute","interval":1},
     {"name":"minute15","unit":"minute","interval":15},
     {"name":"minute30","unit":"minute","interval":30},

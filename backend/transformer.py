@@ -10,7 +10,7 @@ import random
 app=Flask(__name__)
 CORS(app)
 
-formatFilePath='depends/format.json'
+formatFilePath='format.json'
 with open(formatFilePath,'r') as formatFile:
     formatData=json.load(formatFile)
     
@@ -88,19 +88,19 @@ class Transformer:
             
     def SERVE_SERIES(self):
         EPoint=f"series/{timeFrame['name']}/{token['alias']}"
-        url=f"/floatIQ/data/{EPoint}"
+        url=f"/data/{EPoint}"
 
         app.add_url_rule(url,endpoint=EPoint,view_func=lambda:jsonify(self.series))
         
     def SERVE_LATEST(self):
         EPoint=f"latest/{timeFrame['name']}/{token['alias']}"
-        url=f"/floatIQ/data/{EPoint}"
+        url=f"/data/{EPoint}"
 
         app.add_url_rule(url,endpoint=EPoint,view_func=lambda:jsonify(self.record))
     
     def SERVE_STREAM(self):
         EPoint=f"stream/{timeFrame['name']}/{token['alias']}"
-        url=f"/floatIQ/data/{EPoint}"
+        url=f"/data/{EPoint}"
 
         app.add_url_rule(url,endpoint=EPoint,view_func=lambda:Response(self.GENERATOR(),mimetype='text/event-stream'))
 
