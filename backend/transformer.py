@@ -30,6 +30,7 @@ class Transformer:
         self.Low=float('inf')
         self.Close=0
         self.Coef=0
+        self.traffic=0
         self.Dttm=datetime.now().timestamp()
         self.record={}
         self.series=[]
@@ -61,7 +62,9 @@ class Transformer:
             record=json.loads(record.data)
             
             self.noise=record['noise']
-                
+            self.Dttm=record['time']
+            self.traffic=record['bets']
+
             if self.noise>=1:
                 if self.noise>self.flop:
                     self.Coef+=self.flop-1
@@ -74,7 +77,7 @@ class Transformer:
                 
             self.High=max(self.Open,self.High,self.Close)
             self.Low=min(self.Open,self.Low,self.Close)
-            self.record={'time':self.Dttm,'noise':self.noise,'coef':self.Coef,'open':round(self.Open,2),'high':round(self.High,2),'low':round(self.Low,2),'close':round(self.Close,2)}
+            self.record={'traffic':self.traffic,'time':self.Dttm,'noise':self.noise,'coef':self.Coef,'open':round(self.Open,2),'high':round(self.High,2),'low':round(self.Low,2),'close':round(self.Close,2)}
             
             if self.TIMER():
                 self.Dttm=datetime.now().timestamp()
