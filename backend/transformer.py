@@ -44,8 +44,8 @@ class Transformer:
         timerRef={
             'second':lambda T:datetime.now().second%T==0,
             'minute':lambda T:datetime.now().minute%T==0 and datetime.now().second==0,
-            'hour':lambda T:datetime.now().hour%T==0 and datetime.now().second==0,
-            'day':lambda T:datetime.now().day%T==0 and datetime.now().second==0,
+            'hour':lambda T:datetime.now().hour%T==0 and datetime.now().minute==0 and datetime.now().second==0,
+            'day':lambda T:datetime.now().day%T==0 and datetime.now().hour==0 and datetime.now().minute==0 and datetime.now().second==0,
 
             'week':lambda T:datetime.now().isocalendar()[1]%T==0 and datetime.now().second==0,
             'month':lambda T:datetime.now().month%T==0 and datetime.now().second==0
@@ -62,7 +62,6 @@ class Transformer:
             record=json.loads(record.data)
             
             self.noise=record['noise']
-            self.Dttm=record['time']
             self.traffic=record['bets']
 
             if self.noise>=1:

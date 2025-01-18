@@ -32,7 +32,7 @@ def yield_data():
         else:
             noise=round(random.uniform(-0.50,0.50),2)
             bets=None
-            dttm=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            dttm=datetime.now().timestamp()
             tempRecord={'noise':noise,'bets':bets,'time':dttm}
 
             yield f"data: {json.dumps(tempRecord)}\n\n"
@@ -48,7 +48,7 @@ def latest():
     global record
     return record
 
-@app.route('/raw/history')
+@app.route('/raw/series')
 def history():
     return jsonify(series[::-1])
 
@@ -69,7 +69,7 @@ def fetch_data():
                 multiplier=latestMultipliers[0].text.replace('x','')
                 bets=driver.find_element(locator.XPATH,'//*[@class="all-bets-block d-flex justify-content-between align-items-center px-2 pb-1"]').find_elements(locator.XPATH,'.//div')[0].find_elements(locator.XPATH,'.//div')[1].text
 
-                dttm=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                dttm=datetime.now().timestamp()
 
                 data={'noise':float(multiplier),'bets':int(bets),'time':dttm}
 
