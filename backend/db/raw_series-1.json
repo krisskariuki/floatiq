@@ -1,0 +1,1242 @@
+[
+ {
+  "id":0,
+  "std_time":"2025-01-18 15:53:28",
+  "multiplier":1.64,
+  "probability":null,
+  "bets":3969,
+  "payout":null,
+  "rtp":null,
+  "unix_time":1737204808.942402
+ },
+ {
+  "id":1,
+  "std_time":"2025-01-18 15:53:31",
+  "multiplier":5.44,
+  "probability":0.0,
+  "bets":3969,
+  "payout":0.0,
+  "rtp":0.0,
+  "unix_time":1737204811.592291
+ },
+ {
+  "id":2,
+  "std_time":"2025-01-18 15:54:16",
+  "multiplier":12.03,
+  "probability":0.0,
+  "bets":4293,
+  "payout":0.0,
+  "rtp":0.0,
+  "unix_time":1737204856.774812
+ },
+ {
+  "id":3,
+  "std_time":"2025-01-18 15:54:44",
+  "multiplier":4.03,
+  "probability":0.67,
+  "bets":3882,
+  "payout":10481.79,
+  "rtp":2.7,
+  "unix_time":1737204884.162283
+ },
+ {
+  "id":4,
+  "std_time":"2025-01-18 15:55:20",
+  "multiplier":8.25,
+  "probability":0.25,
+  "bets":4922,
+  "payout":10151.62,
+  "rtp":2.06,
+  "unix_time":1737204920.498808
+ },
+ {
+  "id":5,
+  "std_time":"2025-01-18 15:55:44",
+  "multiplier":2.43,
+  "probability":0.8,
+  "bets":5275,
+  "payout":10254.6,
+  "rtp":1.94,
+  "unix_time":1737204944.102522
+ },
+ {
+  "id":6,
+  "std_time":"2025-01-18 15:56:01",
+  "multiplier":1.78,
+  "probability":0.83,
+  "bets":5149,
+  "payout":7607.13,
+  "rtp":1.48,
+  "unix_time":1737204961.982097
+ },
+ {
+  "id":7,
+  "std_time":"2025-01-18 15:56:26",
+  "multiplier":1.57,
+  "probability":1.0,
+  "bets":4774,
+  "payout":7495.18,
+  "rtp":1.57,
+  "unix_time":1737204986.3486
+ },
+ {
+  "id":8,
+  "std_time":"2025-01-18 15:57:05",
+  "multiplier":12.24,
+  "probability":0.0,
+  "bets":4685,
+  "payout":0.0,
+  "rtp":0.0,
+  "unix_time":1737205025.562163
+ },
+ {
+  "id":9,
+  "std_time":"2025-01-18 15:57:32",
+  "multiplier":2.09,
+  "probability":0.67,
+  "bets":5557,
+  "payout":7781.47,
+  "rtp":1.4,
+  "unix_time":1737205052.404955
+ },
+ {
+  "id":10,
+  "std_time":"2025-01-18 15:58:05",
+  "multiplier":4.3,
+  "probability":0.4,
+  "bets":4643,
+  "payout":7985.96,
+  "rtp":1.72,
+  "unix_time":1737205085.731559
+ },
+ {
+  "id":11,
+  "std_time":"2025-01-18 15:58:57",
+  "multiplier":28.99,
+  "probability":0.0,
+  "bets":5468,
+  "payout":0.0,
+  "rtp":0.0,
+  "unix_time":1737205137.758238
+ },
+ {
+  "id":12,
+  "std_time":"2025-01-18 15:59:14",
+  "multiplier":1.0,
+  "probability":1.0,
+  "bets":5823,
+  "payout":5823.0,
+  "rtp":1.0,
+  "unix_time":1737205154.993135
+ },
+ {
+  "id":13,
+  "std_time":"2025-01-18 15:59:54",
+  "multiplier":9.15,
+  "probability":0.23,
+  "bets":5277,
+  "payout":11105.45,
+  "rtp":2.1,
+  "unix_time":1737205194.599866
+ },
+ {
+  "id":14,
+  "std_time":"2025-01-18 16:00:08",
+  "multiplier":1.0,
+  "probability":0.93,
+  "bets":6367,
+  "payout":5921.31,
+  "rtp":0.93,
+  "unix_time":1737205208.096634
+ },
+ {
+  "id":15,
+  "std_time":"2025-01-18 16:00:28",
+  "multiplier":1.75,
+  "probability":0.73,
+  "bets":6234,
+  "payout":7963.93,
+  "rtp":1.28,
+  "unix_time":1737205228.974655
+ },
+ {
+  "id":16,
+  "std_time":"2025-01-18 16:00:52",
+  "multiplier":2.49,
+  "probability":0.5,
+  "bets":5816,
+  "payout":7240.92,
+  "rtp":1.25,
+  "unix_time":1737205252.8111
+ },
+ {
+  "id":17,
+  "std_time":"2025-01-18 16:01:14",
+  "multiplier":2.47,
+  "probability":0.53,
+  "bets":5945,
+  "payout":7782.6,
+  "rtp":1.31,
+  "unix_time":1737205274.659968
+ },
+ {
+  "id":18,
+  "std_time":"2025-01-18 16:01:38",
+  "multiplier":2.31,
+  "probability":0.61,
+  "bets":5893,
+  "payout":8303.83,
+  "rtp":1.41,
+  "unix_time":1737205298.540697
+ },
+ {
+  "id":19,
+  "std_time":"2025-01-18 16:01:59",
+  "multiplier":1.25,
+  "probability":0.89,
+  "bets":4340,
+  "payout":4828.25,
+  "rtp":1.11,
+  "unix_time":1737205319.841885
+ },
+ {
+  "id":20,
+  "std_time":"2025-01-18 16:02:24",
+  "multiplier":2.6,
+  "probability":0.4,
+  "bets":4698,
+  "payout":4885.92,
+  "rtp":1.04,
+  "unix_time":1737205344.67631
+ },
+ {
+  "id":21,
+  "std_time":"2025-01-18 16:02:44",
+  "multiplier":1.4,
+  "probability":0.86,
+  "bets":4976,
+  "payout":5991.1,
+  "rtp":1.2,
+  "unix_time":1737205364.434592
+ },
+ {
+  "id":22,
+  "std_time":"2025-01-18 16:03:06",
+  "multiplier":1.7,
+  "probability":0.73,
+  "bets":0,
+  "payout":0.0,
+  "rtp":1.24,
+  "unix_time":1737205386.848426
+ },
+ {
+  "id":23,
+  "std_time":"2025-01-18 16:03:21",
+  "multiplier":1.3,
+  "probability":0.87,
+  "bets":5322,
+  "payout":6019.18,
+  "rtp":1.13,
+  "unix_time":1737205401.340617
+ },
+ {
+  "id":24,
+  "std_time":"2025-01-18 16:03:34",
+  "multiplier":1.07,
+  "probability":0.92,
+  "bets":4596,
+  "payout":4524.3,
+  "rtp":0.98,
+  "unix_time":1737205414.580035
+ },
+ {
+  "id":25,
+  "std_time":"2025-01-18 16:03:45",
+  "multiplier":1.0,
+  "probability":0.92,
+  "bets":4017,
+  "payout":3695.64,
+  "rtp":0.92,
+  "unix_time":1737205425.15524
+ },
+ {
+  "id":26,
+  "std_time":"2025-01-18 16:04:10",
+  "multiplier":3.85,
+  "probability":0.31,
+  "bets":3770,
+  "payout":4499.49,
+  "rtp":1.19,
+  "unix_time":1737205450.727982
+ },
+ {
+  "id":27,
+  "std_time":"2025-01-18 16:04:28",
+  "multiplier":1.53,
+  "probability":0.74,
+  "bets":4783,
+  "payout":5415.31,
+  "rtp":1.13,
+  "unix_time":1737205468.81254
+ },
+ {
+  "id":28,
+  "std_time":"2025-01-18 16:04:41",
+  "multiplier":1.03,
+  "probability":0.89,
+  "bets":4216,
+  "payout":3864.81,
+  "rtp":0.92,
+  "unix_time":1737205481.258085
+ },
+ {
+  "id":29,
+  "std_time":"2025-01-18 16:05:19",
+  "multiplier":11.3,
+  "probability":0.1,
+  "bets":3631,
+  "payout":4103.03,
+  "rtp":1.13,
+  "unix_time":1737205519.606681
+ },
+ {
+  "id":30,
+  "std_time":"2025-01-18 16:05:44",
+  "multiplier":3.06,
+  "probability":0.33,
+  "bets":4669,
+  "payout":4714.76,
+  "rtp":1.01,
+  "unix_time":1737205544.459752
+ },
+ {
+  "id":31,
+  "std_time":"2025-01-18 16:05:59",
+  "multiplier":1.29,
+  "probability":0.81,
+  "bets":4697,
+  "payout":4907.9,
+  "rtp":1.04,
+  "unix_time":1737205559.32684
+ },
+ {
+  "id":32,
+  "std_time":"2025-01-18 16:06:13",
+  "multiplier":1.39,
+  "probability":0.75,
+  "bets":4153,
+  "payout":4329.5,
+  "rtp":1.04,
+  "unix_time":1737205573.600737
+ },
+ {
+  "id":33,
+  "std_time":"2025-01-18 16:06:27",
+  "multiplier":1.28,
+  "probability":0.82,
+  "bets":4096,
+  "payout":4299.16,
+  "rtp":1.05,
+  "unix_time":1737205587.304901
+ },
+ {
+  "id":34,
+  "std_time":"2025-01-18 16:06:37",
+  "multiplier":1.13,
+  "probability":0.85,
+  "bets":3644,
+  "payout":3500.06,
+  "rtp":0.96,
+  "unix_time":1737205597.928597
+ },
+ {
+  "id":35,
+  "std_time":"2025-01-18 16:06:51",
+  "multiplier":1.0,
+  "probability":0.91,
+  "bets":2972,
+  "payout":2704.52,
+  "rtp":0.91,
+  "unix_time":1737205611.106213
+ },
+ {
+  "id":36,
+  "std_time":"2025-01-18 16:07:17",
+  "multiplier":3.63,
+  "probability":0.28,
+  "bets":3145,
+  "payout":3196.58,
+  "rtp":1.02,
+  "unix_time":1737205637.680967
+ },
+ {
+  "id":37,
+  "std_time":"2025-01-18 16:07:30",
+  "multiplier":1.03,
+  "probability":0.86,
+  "bets":3768,
+  "payout":3337.69,
+  "rtp":0.89,
+  "unix_time":1737205650.523626
+ },
+ {
+  "id":38,
+  "std_time":"2025-01-18 16:07:41",
+  "multiplier":1.14,
+  "probability":0.79,
+  "bets":3197,
+  "payout":2879.22,
+  "rtp":0.9,
+  "unix_time":1737205661.676154
+ },
+ {
+  "id":39,
+  "std_time":"2025-01-18 16:07:52",
+  "multiplier":1.07,
+  "probability":0.82,
+  "bets":2590,
+  "payout":2272.47,
+  "rtp":0.88,
+  "unix_time":1737205672.602067
+ },
+ {
+  "id":40,
+  "std_time":"2025-01-18 16:08:06",
+  "multiplier":1.0,
+  "probability":0.9,
+  "bets":2222,
+  "payout":1999.8,
+  "rtp":0.9,
+  "unix_time":1737205686.521003
+ },
+ {
+  "id":41,
+  "std_time":"2025-01-18 16:08:22",
+  "multiplier":1.53,
+  "probability":0.56,
+  "bets":2422,
+  "payout":2075.17,
+  "rtp":0.86,
+  "unix_time":1737205702.577065
+ },
+ {
+  "id":42,
+  "std_time":"2025-01-18 16:08:32",
+  "multiplier":1.18,
+  "probability":0.74,
+  "bets":2468,
+  "payout":2155.06,
+  "rtp":0.87,
+  "unix_time":1737205712.86362
+ },
+ {
+  "id":43,
+  "std_time":"2025-01-18 16:08:47",
+  "multiplier":1.49,
+  "probability":0.58,
+  "bets":2114,
+  "payout":1826.92,
+  "rtp":0.86,
+  "unix_time":1737205727.045869
+ },
+ {
+  "id":44,
+  "std_time":"2025-01-18 16:09:03",
+  "multiplier":1.5,
+  "probability":0.57,
+  "bets":2073,
+  "payout":1772.41,
+  "rtp":0.85,
+  "unix_time":1737205743.724977
+ },
+ {
+  "id":45,
+  "std_time":"2025-01-18 16:09:30",
+  "multiplier":2.26,
+  "probability":0.38,
+  "bets":1896,
+  "payout":1628.28,
+  "rtp":0.86,
+  "unix_time":1737205770.570236
+ },
+ {
+  "id":46,
+  "std_time":"2025-01-18 16:09:43",
+  "multiplier":1.26,
+  "probability":0.72,
+  "bets":2589,
+  "payout":2348.74,
+  "rtp":0.91,
+  "unix_time":1737205783.17496
+ },
+ {
+  "id":47,
+  "std_time":"2025-01-18 16:09:55",
+  "multiplier":1.26,
+  "probability":0.7,
+  "bets":2163,
+  "payout":1907.77,
+  "rtp":0.88,
+  "unix_time":1737205795.334668
+ },
+ {
+  "id":48,
+  "std_time":"2025-01-18 16:10:14",
+  "multiplier":1.55,
+  "probability":0.5,
+  "bets":1845,
+  "payout":1429.88,
+  "rtp":0.78,
+  "unix_time":1737205814.084232
+ },
+ {
+  "id":49,
+  "std_time":"2025-01-18 16:10:23",
+  "multiplier":1.05,
+  "probability":0.86,
+  "bets":1920,
+  "payout":1733.76,
+  "rtp":0.9,
+  "unix_time":1737205823.119828
+ },
+ {
+  "id":50,
+  "std_time":"2025-01-18 16:10:34",
+  "multiplier":1.08,
+  "probability":0.8,
+  "bets":1630,
+  "payout":1408.32,
+  "rtp":0.86,
+  "unix_time":1737205834.642606
+ },
+ {
+  "id":51,
+  "std_time":"2025-01-18 16:11:00",
+  "multiplier":2.61,
+  "probability":0.24,
+  "bets":1483,
+  "payout":928.95,
+  "rtp":0.63,
+  "unix_time":1737205860.310001
+ },
+ {
+  "id":52,
+  "std_time":"2025-01-18 16:11:36",
+  "multiplier":10.56,
+  "probability":0.08,
+  "bets":2157,
+  "payout":1822.23,
+  "rtp":0.84,
+  "unix_time":1737205896.551468
+ },
+ {
+  "id":53,
+  "std_time":"2025-01-18 16:11:59",
+  "multiplier":2.28,
+  "probability":0.36,
+  "bets":2785,
+  "payout":2285.93,
+  "rtp":0.82,
+  "unix_time":1737205919.879961
+ },
+ {
+  "id":54,
+  "std_time":"2025-01-18 16:12:33",
+  "multiplier":7.54,
+  "probability":0.13,
+  "bets":2908,
+  "payout":2850.42,
+  "rtp":0.98,
+  "unix_time":1737205953.851665
+ },
+ {
+  "id":55,
+  "std_time":"2025-01-18 16:12:48",
+  "multiplier":1.09,
+  "probability":0.8,
+  "bets":3277,
+  "payout":2857.54,
+  "rtp":0.87,
+  "unix_time":1737205968.155459
+ },
+ {
+  "id":56,
+  "std_time":"2025-01-18 16:12:59",
+  "multiplier":1.18,
+  "probability":0.73,
+  "bets":2675,
+  "payout":2304.24,
+  "rtp":0.86,
+  "unix_time":1737205979.017153
+ },
+ {
+  "id":57,
+  "std_time":"2025-01-18 16:13:29",
+  "multiplier":6.3,
+  "probability":0.14,
+  "bets":2455,
+  "payout":2165.31,
+  "rtp":0.88,
+  "unix_time":1737206009.952059
+ },
+ {
+  "id":58,
+  "std_time":"2025-01-18 16:13:44",
+  "multiplier":1.3,
+  "probability":0.62,
+  "bets":3486,
+  "payout":2809.72,
+  "rtp":0.81,
+  "unix_time":1737206024.510987
+ },
+ {
+  "id":59,
+  "std_time":"2025-01-18 16:13:57",
+  "multiplier":1.27,
+  "probability":0.68,
+  "bets":2927,
+  "payout":2527.76,
+  "rtp":0.86,
+  "unix_time":1737206037.786952
+ },
+ {
+  "id":60,
+  "std_time":"2025-01-18 16:14:29",
+  "multiplier":6.58,
+  "probability":0.13,
+  "bets":2905,
+  "payout":2484.94,
+  "rtp":0.86,
+  "unix_time":1737206069.427907
+ },
+ {
+  "id":61,
+  "std_time":"2025-01-18 16:14:56",
+  "multiplier":3.3,
+  "probability":0.25,
+  "bets":3237,
+  "payout":2670.52,
+  "rtp":0.82,
+  "unix_time":1737206096.012518
+ },
+ {
+  "id":62,
+  "std_time":"2025-01-18 16:18:48",
+  "multiplier":1.08,
+  "probability":0.82,
+  "bets":3128,
+  "payout":2770.16,
+  "rtp":0.89,
+  "unix_time":1737206328.31433
+ },
+ {
+  "id":63,
+  "std_time":"2025-01-18 16:18:50",
+  "multiplier":5.35,
+  "probability":0.17,
+  "bets":3128,
+  "payout":2844.92,
+  "rtp":0.91,
+  "unix_time":1737206330.143126
+ },
+ {
+  "id":64,
+  "std_time":"2025-01-18 16:19:13",
+  "multiplier":2.28,
+  "probability":0.38,
+  "bets":4229,
+  "payout":3664.01,
+  "rtp":0.87,
+  "unix_time":1737206353.09525
+ },
+ {
+  "id":65,
+  "std_time":"2025-01-18 16:19:57",
+  "multiplier":17.7,
+  "probability":0.02,
+  "bets":4169,
+  "payout":1475.83,
+  "rtp":0.35,
+  "unix_time":1737206397.421698
+ },
+ {
+  "id":66,
+  "std_time":"2025-01-18 16:20:20",
+  "multiplier":2.42,
+  "probability":0.36,
+  "bets":4320,
+  "payout":3763.58,
+  "rtp":0.87,
+  "unix_time":1737206420.448623
+ },
+ {
+  "id":67,
+  "std_time":"2025-01-18 16:20:56",
+  "multiplier":9.88,
+  "probability":0.09,
+  "bets":4396,
+  "payout":3908.92,
+  "rtp":0.89,
+  "unix_time":1737206456.374683
+ },
+ {
+  "id":68,
+  "std_time":"2025-01-18 16:21:17",
+  "multiplier":1.34,
+  "probability":0.63,
+  "bets":4881,
+  "payout":4120.54,
+  "rtp":0.84,
+  "unix_time":1737206477.756697
+ },
+ {
+  "id":69,
+  "std_time":"2025-01-18 16:22:00",
+  "multiplier":16.9,
+  "probability":0.03,
+  "bets":4517,
+  "payout":2290.12,
+  "rtp":0.51,
+  "unix_time":1737206520.452176
+ },
+ {
+  "id":70,
+  "std_time":"2025-01-18 16:22:25",
+  "multiplier":1.81,
+  "probability":0.46,
+  "bets":0,
+  "payout":0.0,
+  "rtp":0.83,
+  "unix_time":1737206545.516807
+ },
+ {
+  "id":71,
+  "std_time":"2025-01-18 16:22:48",
+  "multiplier":2.44,
+  "probability":0.35,
+  "bets":5104,
+  "payout":4358.82,
+  "rtp":0.85,
+  "unix_time":1737206568.350315
+ },
+ {
+  "id":72,
+  "std_time":"2025-01-18 16:23:15",
+  "multiplier":2.89,
+  "probability":0.29,
+  "bets":4745,
+  "payout":3976.78,
+  "rtp":0.84,
+  "unix_time":1737206595.888434
+ },
+ {
+  "id":73,
+  "std_time":"2025-01-18 16:23:36",
+  "multiplier":1.48,
+  "probability":0.62,
+  "bets":4954,
+  "payout":4545.79,
+  "rtp":0.92,
+  "unix_time":1737206616.609061
+ },
+ {
+  "id":74,
+  "std_time":"2025-01-18 16:23:52",
+  "multiplier":1.04,
+  "probability":0.91,
+  "bets":4751,
+  "payout":4496.35,
+  "rtp":0.95,
+  "unix_time":1737206632.525976
+ },
+ {
+  "id":75,
+  "std_time":"2025-01-18 16:24:09",
+  "multiplier":1.82,
+  "probability":0.45,
+  "bets":4414,
+  "payout":3615.07,
+  "rtp":0.82,
+  "unix_time":1737206649.910764
+ },
+ {
+  "id":76,
+  "std_time":"2025-01-18 16:24:33",
+  "multiplier":2.8,
+  "probability":0.29,
+  "bets":4394,
+  "payout":3567.93,
+  "rtp":0.81,
+  "unix_time":1737206673.756317
+ },
+ {
+  "id":77,
+  "std_time":"2025-01-18 16:24:53",
+  "multiplier":1.59,
+  "probability":0.53,
+  "bets":4869,
+  "payout":4103.11,
+  "rtp":0.84,
+  "unix_time":1737206693.913777
+ },
+ {
+  "id":78,
+  "std_time":"2025-01-18 16:25:10",
+  "multiplier":1.4,
+  "probability":0.63,
+  "bets":4132,
+  "payout":3644.42,
+  "rtp":0.88,
+  "unix_time":1737206710.941891
+ },
+ {
+  "id":79,
+  "std_time":"2025-01-18 16:25:22",
+  "multiplier":1.15,
+  "probability":0.8,
+  "bets":3632,
+  "payout":3341.44,
+  "rtp":0.92,
+  "unix_time":1737206722.140186
+ },
+ {
+  "id":80,
+  "std_time":"2025-01-18 16:25:51",
+  "multiplier":4.58,
+  "probability":0.19,
+  "bets":3424,
+  "payout":2979.56,
+  "rtp":0.87,
+  "unix_time":1737206751.380871
+ },
+ {
+  "id":81,
+  "std_time":"2025-01-18 16:26:22",
+  "multiplier":4.35,
+  "probability":0.2,
+  "bets":3765,
+  "payout":3275.55,
+  "rtp":0.87,
+  "unix_time":1737206782.411735
+ },
+ {
+  "id":82,
+  "std_time":"2025-01-18 16:26:52",
+  "multiplier":4.61,
+  "probability":0.18,
+  "bets":4477,
+  "payout":3715.01,
+  "rtp":0.83,
+  "unix_time":1737206812.46337
+ },
+ {
+  "id":83,
+  "std_time":"2025-01-18 16:27:27",
+  "multiplier":8.6,
+  "probability":0.11,
+  "bets":4723,
+  "payout":4467.96,
+  "rtp":0.95,
+  "unix_time":1737206847.816078
+ },
+ {
+  "id":84,
+  "std_time":"2025-01-18 16:27:46",
+  "multiplier":1.37,
+  "probability":0.67,
+  "bets":4593,
+  "payout":4215.91,
+  "rtp":0.92,
+  "unix_time":1737206866.747468
+ },
+ {
+  "id":85,
+  "std_time":"2025-01-18 16:28:06",
+  "multiplier":2.19,
+  "probability":0.45,
+  "bets":4269,
+  "payout":4207.1,
+  "rtp":0.99,
+  "unix_time":1737206886.316396
+ },
+ {
+  "id":86,
+  "std_time":"2025-01-18 16:28:34",
+  "multiplier":2.57,
+  "probability":0.34,
+  "bets":4715,
+  "payout":4119.97,
+  "rtp":0.87,
+  "unix_time":1737206914.626521
+ },
+ {
+  "id":87,
+  "std_time":"2025-01-18 16:28:56",
+  "multiplier":1.15,
+  "probability":0.8,
+  "bets":4586,
+  "payout":4219.12,
+  "rtp":0.92,
+  "unix_time":1737206936.129494
+ },
+ {
+  "id":88,
+  "std_time":"2025-01-18 16:29:20",
+  "multiplier":2.12,
+  "probability":0.45,
+  "bets":0,
+  "payout":0.0,
+  "rtp":0.95,
+  "unix_time":1737206960.701483
+ },
+ {
+  "id":89,
+  "std_time":"2025-01-18 16:29:46",
+  "multiplier":4.36,
+  "probability":0.2,
+  "bets":4799,
+  "payout":4184.73,
+  "rtp":0.87,
+  "unix_time":1737206986.373114
+ },
+ {
+  "id":90,
+  "std_time":"2025-01-18 16:30:14",
+  "multiplier":4.57,
+  "probability":0.2,
+  "bets":4706,
+  "payout":4301.28,
+  "rtp":0.91,
+  "unix_time":1737207014.634567
+ },
+ {
+  "id":91,
+  "std_time":"2025-01-18 16:30:40",
+  "multiplier":2.64,
+  "probability":0.32,
+  "bets":4891,
+  "payout":4131.92,
+  "rtp":0.84,
+  "unix_time":1737207040.647308
+ },
+ {
+  "id":92,
+  "std_time":"2025-01-18 16:31:04",
+  "multiplier":2.03,
+  "probability":0.49,
+  "bets":0,
+  "payout":0.0,
+  "rtp":0.99,
+  "unix_time":1737207064.243112
+ },
+ {
+  "id":93,
+  "std_time":"2025-01-18 16:31:36",
+  "multiplier":5.81,
+  "probability":0.15,
+  "bets":4120,
+  "payout":3590.58,
+  "rtp":0.87,
+  "unix_time":1737207096.076983
+ },
+ {
+  "id":94,
+  "std_time":"2025-01-18 16:32:12",
+  "multiplier":7.04,
+  "probability":0.13,
+  "bets":5174,
+  "payout":4735.24,
+  "rtp":0.92,
+  "unix_time":1737207132.951677
+ },
+ {
+  "id":95,
+  "std_time":"2025-01-18 16:32:29",
+  "multiplier":1.04,
+  "probability":0.92,
+  "bets":5696,
+  "payout":5449.93,
+  "rtp":0.96,
+  "unix_time":1737207149.883743
+ },
+ {
+  "id":96,
+  "std_time":"2025-01-18 16:32:49",
+  "multiplier":1.22,
+  "probability":0.78,
+  "bets":4536,
+  "payout":4316.46,
+  "rtp":0.95,
+  "unix_time":1737207169.389263
+ },
+ {
+  "id":97,
+  "std_time":"2025-01-18 16:33:30",
+  "multiplier":15.26,
+  "probability":0.03,
+  "bets":4410,
+  "payout":2018.9,
+  "rtp":0.46,
+  "unix_time":1737207210.792686
+ },
+ {
+  "id":98,
+  "std_time":"2025-01-18 16:33:55",
+  "multiplier":2.31,
+  "probability":0.42,
+  "bets":5722,
+  "payout":5551.48,
+  "rtp":0.97,
+  "unix_time":1737207235.413694
+ },
+ {
+  "id":99,
+  "std_time":"2025-01-18 16:34:16",
+  "multiplier":1.86,
+  "probability":0.51,
+  "bets":5528,
+  "payout":5243.86,
+  "rtp":0.95,
+  "unix_time":1737207256.683165
+ },
+ {
+  "id":100,
+  "std_time":"2025-01-18 16:34:36",
+  "multiplier":1.03,
+  "probability":0.93,
+  "bets":4324,
+  "payout":4141.96,
+  "rtp":0.96,
+  "unix_time":1737207276.385684
+ },
+ {
+  "id":101,
+  "std_time":"2025-01-18 16:34:54",
+  "multiplier":1.18,
+  "probability":0.78,
+  "bets":5035,
+  "payout":4634.21,
+  "rtp":0.92,
+  "unix_time":1737207294.788097
+ },
+ {
+  "id":102,
+  "std_time":"2025-01-18 16:35:18",
+  "multiplier":2.0,
+  "probability":0.49,
+  "bets":4307,
+  "payout":4220.86,
+  "rtp":0.98,
+  "unix_time":1737207318.911401
+ },
+ {
+  "id":103,
+  "std_time":"2025-01-18 16:35:49",
+  "multiplier":5.12,
+  "probability":0.18,
+  "bets":4827,
+  "payout":4448.56,
+  "rtp":0.92,
+  "unix_time":1737207349.039322
+ },
+ {
+  "id":104,
+  "std_time":"2025-01-18 16:36:11",
+  "multiplier":1.94,
+  "probability":0.5,
+  "bets":4535,
+  "payout":4398.95,
+  "rtp":0.97,
+  "unix_time":1737207371.342967
+ },
+ {
+  "id":105,
+  "std_time":"2025-01-18 16:36:39",
+  "multiplier":3.87,
+  "probability":0.26,
+  "bets":4178,
+  "payout":4203.9,
+  "rtp":1.01,
+  "unix_time":1737207399.292011
+ },
+ {
+  "id":106,
+  "std_time":"2025-01-18 16:36:58",
+  "multiplier":1.13,
+  "probability":0.84,
+  "bets":5134,
+  "payout":4873.19,
+  "rtp":0.95,
+  "unix_time":1737207418.283459
+ },
+ {
+  "id":107,
+  "std_time":"2025-01-18 16:37:31",
+  "multiplier":3.54,
+  "probability":0.28,
+  "bets":4953,
+  "payout":4909.41,
+  "rtp":0.99,
+  "unix_time":1737207451.949329
+ },
+ {
+  "id":108,
+  "std_time":"2025-01-18 16:37:55",
+  "multiplier":2.18,
+  "probability":0.46,
+  "bets":4687,
+  "payout":4700.12,
+  "rtp":1.0,
+  "unix_time":1737207475.102215
+ },
+ {
+  "id":109,
+  "std_time":"2025-01-18 16:38:14",
+  "multiplier":1.42,
+  "probability":0.65,
+  "bets":4734,
+  "payout":4369.48,
+  "rtp":0.92,
+  "unix_time":1737207494.422294
+ },
+ {
+  "id":110,
+  "std_time":"2025-01-18 16:38:40",
+  "multiplier":3.05,
+  "probability":0.3,
+  "bets":4517,
+  "payout":4133.05,
+  "rtp":0.91,
+  "unix_time":1737207520.202455
+ },
+ {
+  "id":111,
+  "std_time":"2025-01-18 16:38:59",
+  "multiplier":1.95,
+  "probability":0.5,
+  "bets":4838,
+  "payout":4717.05,
+  "rtp":0.97,
+  "unix_time":1737207539.895818
+ },
+ {
+  "id":112,
+  "std_time":"2025-01-18 16:39:32",
+  "multiplier":7.28,
+  "probability":0.12,
+  "bets":4595,
+  "payout":4014.19,
+  "rtp":0.87,
+  "unix_time":1737207572.958668
+ },
+ {
+  "id":113,
+  "std_time":"2025-01-18 16:40:15",
+  "multiplier":10.79,
+  "probability":0.06,
+  "bets":3884,
+  "payout":2514.5,
+  "rtp":0.65,
+  "unix_time":1737207615.759137
+ },
+ {
+  "id":114,
+  "std_time":"2025-01-18 16:40:36",
+  "multiplier":1.57,
+  "probability":0.6,
+  "bets":5011,
+  "payout":4720.36,
+  "rtp":0.94,
+  "unix_time":1737207636.690564
+ },
+ {
+  "id":115,
+  "std_time":"2025-01-18 16:40:57",
+  "multiplier":1.37,
+  "probability":0.7,
+  "bets":4354,
+  "payout":4175.49,
+  "rtp":0.96,
+  "unix_time":1737207657.918679
+ },
+ {
+  "id":116,
+  "std_time":"2025-01-18 16:41:15",
+  "multiplier":1.21,
+  "probability":0.79,
+  "bets":3809,
+  "payout":3641.02,
+  "rtp":0.96,
+  "unix_time":1737207675.58392
+ },
+ {
+  "id":117,
+  "std_time":"2025-01-18 16:41:35",
+  "multiplier":1.48,
+  "probability":0.64,
+  "bets":4129,
+  "payout":3910.99,
+  "rtp":0.95,
+  "unix_time":1737207695.6487
+ },
+ {
+  "id":118,
+  "std_time":"2025-01-18 16:41:49",
+  "multiplier":1.45,
+  "probability":0.65,
+  "bets":4051,
+  "payout":3818.07,
+  "rtp":0.94,
+  "unix_time":1737207709.511437
+ },
+ {
+  "id":119,
+  "std_time":"2025-01-18 16:42:11",
+  "multiplier":1.22,
+  "probability":0.78,
+  "bets":3652,
+  "payout":3475.24,
+  "rtp":0.95,
+  "unix_time":1737207731.90965
+ },
+ {
+  "id":120,
+  "std_time":"2025-01-18 16:42:51",
+  "multiplier":10.44,
+  "probability":0.07,
+  "bets":3353,
+  "payout":2450.37,
+  "rtp":0.73,
+  "unix_time":1737207771.919973
+ },
+ {
+  "id":121,
+  "std_time":"2025-01-18 16:43:20",
+  "multiplier":2.56,
+  "probability":0.36,
+  "bets":4668,
+  "payout":4302.03,
+  "rtp":0.92,
+  "unix_time":1737207800.240667
+ },
+ {
+  "id":122,
+  "std_time":"2025-01-18 16:43:41",
+  "multiplier":2.14,
+  "probability":0.46,
+  "bets":4562,
+  "payout":4490.83,
+  "rtp":0.98,
+  "unix_time":1737207821.386774
+ },
+ {
+  "id":123,
+  "std_time":"2025-01-18 16:44:08",
+  "multiplier":4.61,
+  "probability":0.19,
+  "bets":4347,
+  "payout":3807.54,
+  "rtp":0.88,
+  "unix_time":1737207848.86205
+ }
+]
