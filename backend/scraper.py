@@ -1,7 +1,16 @@
 from selenium_imports import *
 from datetime import datetime
+from colorama import Fore
 import time
 import threading
+
+w=Fore.WHITE
+r=Fore.RED
+g=Fore.GREEN
+b=Fore.BLUE
+y=Fore.YELLOW
+c=Fore.CYAN
+m=Fore.MAGENTA
 
 class Action:
     def __init__(self,action:str='locate',attribute:str='',delay:int=5,inputValue:str=None,callback=None)->None:
@@ -28,41 +37,76 @@ class Navigator:
         options.add_experimental_option('detach',True)
 
         self.driver=webdriver.Chrome(service=service,options=options)
-
-    def action(self,action):
-        
+                
+    def action(self,action):                
         def locate():
+            state=False
             element=WebDriverWait(self.driver,60).until(EC.presence_of_element_located((By.XPATH,f'//*[@{action.attribute}]')))
-            if not element:
-                print('no element with the provided attribute was found')
-            
-            print(f"element with the provided attribue was found : {element.get_attribute('outerHTML')}")
+
+            if element:
+                state=True
+                print(f'{g}{self.driver.title}{w}')
+
+            else :
+                print('unable to locate element')
+
+            return state
         
         def click()->None:
-            WebDriverWait(self.driver,60).until(EC.element_to_be_clickable((By.XPATH,f'//*[@{action.attribute}]'))).click()
+            state=False
+            element=WebDriverWait(self.driver,60).until(EC.element_to_be_clickable((By.XPATH,f'//*[@{action.attribute}]')))
+
+            if element:
+                state=True
+                element.click()
+
+            return state
         
         def write()->None:
-            self.driver.find_element(By.XPATH,f'//*[@{action.attribute}]').send_keys(action.inputValue)
+            state=False
+            element=WebDriverWait(self.driver,60).until(EC.presence_of_element_located((By.XPATH,f'//*[@{action.attribute}]')))
+
+            if element:
+                state=True
+                element.send_keys(action.inputValue)
+
+            return state
         
         def send()->None:
-            self.driver.find_element(By.XPATH,f'//*[@{action.attribute}]').send_keys(action.inputValue + Keys.RETURN)
-        
-        def extract()->None:
-            print(self.driver.find_element(By.XPATH,f'//*[@{action.attribute}]').text)
+            state=False
+            element=WebDriverWait(self.driver,60).until(EC.presence_of_element_located((By.XPATH,f'//*[@{action.attribute}]')))
+            
+            if element:
+                state=True
+                element.send_keys(action.inputValue+Keys.RETURN)
+
+            return state
 
         def custom()->None:
-            threading.Thread(target=action.callback,args=({'driver':self.driver,'locator':By},)).start()
+            try:
+                state=False
+                element=WebDriverWait(self.driver,60).until(EC.presence_of_element_located((By.XPATH,f'//*[@{action.attribute}]')))
+
+                if element:
+                    state=True
+                return state
+            
+            finally:
+                threading.Thread(target=action.callback,args=({'driver':self.driver,'locator':By},)).start()
 
         def apply_delay(function):
-            time.sleep(action.delay)
-            function()
+            # while action.delay > 0:
+            #     if function():
+            #         break
+            #     action.delay-=1
+                time.sleep(action.delay)
+                function()
 
         actionHashMap={
             'locate':locate,
             'click':click,
             'write':write,
             'send':send,
-            'extract':extract,
             'custom':custom
             }
         
