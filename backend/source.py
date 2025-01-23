@@ -12,7 +12,7 @@ w=Fore.WHITE
 g=Fore.GREEN
 y=Fore.YELLOW
 c=Fore.CYAN
-m=Fore.MAGENTA
+b=Fore.LIGHTBLACK_EX
 
 logging.basicConfig(level=logging.INFO,format='%(asctime)s  %(levelname)s  %(message)s',datefmt='%Y-%m-%d %H:%M:%S')
 
@@ -60,7 +60,6 @@ class Navigator:
 
         try:
             self.driver.get(self.url)
-            logging.info(self.driver.get_window_size())
             logging.info(f'{c}navigating to {self.url}...{w}')
 
             loginLink=WebDriverWait(self.driver,30).until(EC.element_to_be_clickable((By.XPATH,'//*[@class="login-link mozzart_ke"]')))
@@ -122,7 +121,7 @@ class Navigator:
                         fileSeries=json.dumps(self.series,indent=True,separators=(',',':'))
                         file.write(fileSeries)
 
-                    print(f'{c}{self.record}{w}')
+                    print(f'{b}{self.record}{w}')
                     round_id+=1
 
                 time.sleep(0.1)
