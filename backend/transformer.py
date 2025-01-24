@@ -10,7 +10,7 @@ import random
 app=Flask(__name__)
 CORS(app)
 
-formatFilePath='format.json'
+formatFilePath='config/format.json'
 with open(formatFilePath,'r') as formatFile:
     formatData=json.load(formatFile)
     

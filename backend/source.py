@@ -1,12 +1,13 @@
 from selenium_imports import *
 from datetime import datetime
 from colorama import Fore
+from time import sleep
 import threading
 import logging
 import json
-import time
 import os
 import argparse
+import pandas as pd
 
 w=Fore.WHITE
 g=Fore.GREEN
@@ -14,7 +15,7 @@ y=Fore.YELLOW
 c=Fore.CYAN
 b=Fore.LIGHTBLACK_EX
 
-logging.basicConfig(level=logging.INFO,format='%(asctime)s  %(levelname)s  %(message)s',datefmt='%Y-%m-%d %H:%M:%S')
+logging.basicConfig(level=logging.INFO,format='%(message)s')
 
 navigator_parser=argparse.ArgumentParser(description='for controlling the bots configuration parameters')
 navigator_parser.add_argument('--browse',action='store_false')
@@ -45,19 +46,29 @@ class Navigator:
         
         self.driver=webdriver.Chrome(options=options,service=service)
 
-    def manage_data_backup(self,fileName='raw_data'):
-        file_id=1
-        folderName='raw_data'
+    def manage_data_backup(self,fileName='raw_data',formats=['json','csv']):
+        file_id=0
+        folderName='raw'
 
-        if os.path.exists(f'{folderName}/{fileName}.json'):
-            self.fileName=f'{folderName}/{fileName}_{file_id}.json'
-            file_id+=1
+        file_id+=1 if (os.path.exists(f'{folderName}/{format}/{fileName}_{file_id}.{format}') for format in formats) else file_id
 
-        else:
-            self.fileName=f'{folderName}/{fileName}.json'
-        
+        for format in formats:
+            file_to_check=f'{folderName}/{format}/{fileName}_{file_id}.{format}'
+
+            directory=os.path.dirname(file_to_check)
+            os.makedirs(directory,exist_ok=True)
+
+            self.fileName=file_to_check
+            
+            if format=='json':
+                with open(self.fileName,'w') as file:
+                    json.dump(self.series,file,indent=True,separators=(',',':'))
+
+            elif format=='csv':
+                df=pd.DataFrame(self.series)
+                df.to_csv(self.fileName,index=False)
+
     def navigate_to_game(self):
-
         try:
             self.driver.get(self.url)
             logging.info(f'{c}navigating to {self.url}...{w}')
@@ -75,7 +86,7 @@ class Navigator:
             passwordInput.send_keys(self.password + Keys.RETURN)
 
             gameButton=WebDriverWait(self.driver,30).until(EC.element_to_be_clickable((By.XPATH,'//*[@alt="Aviator"]')))
-            time.sleep(1)                                         
+            sleep(1)                                         
             gameButton.click()
             logging.info(f'{c}navigating to game engine...{w}')
 
@@ -84,65 +95,61 @@ class Navigator:
             if 'no such window' in str(e):
                 self.driver.quit()
                 logging.error(f'{y}navigation procedure error - no such window exception\n{c}Attempting to fix...{w}')
-                self.__init__((self.phone,self.password),self.url,self.headless)
+                self.__init__((self.phone,self.password),self.headless)
                 self.navigate_to_game()
 
             self.driver.quit()
             logging.error(f'{y}navigation procedure error- {e}\n{c}Attempting to fix...{w}')
-            self.__init__((self.phone,self.password),self.url,self.headless)
+            self.__init__((self.phone,self.password),self.headless)
             self.navigate_to_game()
 
     def extract_data_from_game_engine(self):
-        previousMutipliers=None     
-        round_id=1
-        dttm=None
-        multiplier=0
-        bets=0
-               
-        payoutsBlock=WebDriverWait(self.driver,30).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))
-        if payoutsBlock:
-            logging.info(f'{g}connected to game engine successfully\n\n{w}')
+        old=None
+        def check_for_new_data(recent):
+            nonlocal old
+            timestamp=None
+            multiplier=0
+            bets=0
 
-        try:
-            while True:
-                latestMultipliers=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
-
-                if previousMutipliers!=latestMultipliers:
-                    previousMutipliers=latestMultipliers
-                    multiplier=float(latestMultipliers[0].text.replace('x',''))
+            if old!=recent:
+                    old=recent
+                    multiplier=float(recent[0].text.replace('x',''))
                     bets=int(self.driver.find_element(By.XPATH,'//*[@class="all-bets-block d-flex justify-content-between align-items-center px-2 pb-1"]').find_elements(By.XPATH,'.//div')[0].find_elements(By.XPATH,'.//div')[1].text)
 
-                    dttm=datetime.now().isoformat(sep=' ',timespec='seconds')
-                    data={'id':round_id,'dttm':dttm,'multiplier':multiplier,'bets':bets}
+                    timestamp=datetime.now().isoformat(sep=' ',timespec='seconds')
+                    data={'multiplier':multiplier,'bets':bets,'timestamp':timestamp}
                     self.record=json.dumps(data,separators=(',',':'))
                     self.series.append(data)
 
-                    with open(self.fileName,'w') as file:
-                        fileSeries=json.dumps(self.series,indent=True,separators=(',',':'))
-                        file.write(fileSeries)
+                    print(f'{b}{self.record}{w}\n')
+                    self.manage_data_backup('raw',['json','csv'])
+            
+        try:
+            payoutsBlock=WebDriverWait(self.driver,30).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))
+            if payoutsBlock:
+                logging.info(f'{g}connected to game engine successfully\n\n{w}')
 
-                    print(f'{b}{self.record}{w}')
-                    round_id+=1
-
-                time.sleep(0.1)
+            while True:
+                latestMultipliers=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
+                check_for_new_data(latestMultipliers)
+                sleep(0.1)
 
         except (AttributeError,TypeError,WebDriverException,StaleElementReferenceException,NoSuchWindowException,TimeoutException) as e:
 
             if 'no such window' in str(e):
                 self.driver.quit()
                 logging.error(f'{y}game engine error - no such window exception\n{c}Attempting to fix...{w}')
-                self.__init__((self.phone,self.password),self.url,self.headless)
+                self.__init__((self.phone,self.password),self.headless)
                 self.start()
 
             self.driver.quit()
             logging.error(f'{y}game engine error - {e}\n{c}Attempting to fix...{w}')
-            self.__init__((self.phone,self.password),self.url,self.headless)
+            self.__init__((self.phone,self.password),self.headless)
             self.start()        
     
     def start(self):
         source_thread=threading.Thread(target=self.extract_data_from_game_engine)
         self.navigate_to_game()
-        self.manage_data_backup(fileName='raw_data')
         source_thread.start()
 
 mozzartGame=Navigator(('0113294793','Chri570ph3r.'),navigator_arguments.browse)
