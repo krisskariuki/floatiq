@@ -11,8 +11,8 @@ import argparse
 import pandas as pd
 
 load_dotenv()
-PHONE=os.getenv(PHONE)
-PASSWORD=os.getenv(PASSWORD)
+PHONE=os.getenv('PHONE')
+PASSWORD=os.getenv('PASSWORD')
 
 w=Fore.WHITE
 g=Fore.GREEN
