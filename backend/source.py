@@ -2,12 +2,17 @@ from selenium_imports import *
 from datetime import datetime
 from colorama import Fore
 from time import sleep
+from dotenv import load_dotenv
 import threading
 import logging
 import json
 import os
 import argparse
 import pandas as pd
+
+load_dotenv()
+PHONE=os.getenv(PHONE)
+PASSWORD=os.getenv(PASSWORD)
 
 w=Fore.WHITE
 g=Fore.GREEN
@@ -16,7 +21,6 @@ c=Fore.CYAN
 b=Fore.LIGHTBLACK_EX
 
 logging.basicConfig(level=logging.INFO,format='%(message)s')
-
 navigator_parser=argparse.ArgumentParser(description='for controlling the bots configuration parameters')
 navigator_parser.add_argument('--browse',action='store_false')
 navigator_arguments=navigator_parser.parse_args()
@@ -152,5 +156,5 @@ class Navigator:
         self.navigate_to_game()
         source_thread.start()
 
-mozzartGame=Navigator(('0113294793','Chri570ph3r.'),navigator_arguments.browse)
+mozzartGame=Navigator((PHONE,PASSWORD),navigator_arguments.browse)
 mozzartGame.start()
