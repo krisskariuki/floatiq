@@ -50,27 +50,18 @@ class Navigator:
         
         self.driver=webdriver.Chrome(options=options,service=service)
 
-    def manage_data_backup(self,fileName='raw_data',formats=['json','csv']):
+    def manage_data_backup(self,folderName='raw',fileName='raw_data'):
         file_id=0
-        folderName='raw'
 
-        file_id+=1 if (os.path.exists(f'{folderName}/{format}/{fileName}_{file_id}.{format}') for format in formats) else file_id
+        while (os.path.exists(f'{folderName}/{fileName}_{file_id}.csv')):
+            file_id+=1
 
-        for format in formats:
-            file_to_check=f'{folderName}/{format}/{fileName}_{file_id}.{format}'
+        file_to_check=f'{folderName}/{fileName}_{file_id}.csv'
 
-            directory=os.path.dirname(file_to_check)
-            os.makedirs(directory,exist_ok=True)
+        directory=os.path.dirname(file_to_check)
+        os.makedirs(directory,exist_ok=True)
 
-            self.fileName=file_to_check
-            
-            if format=='json':
-                with open(self.fileName,'w') as file:
-                    json.dump(self.series,file,indent=True,separators=(',',':'))
-
-            elif format=='csv':
-                df=pd.DataFrame(self.series)
-                df.to_csv(self.fileName,index=False)
+        self.fileName=file_to_check
 
     def navigate_to_game(self):
         try:
@@ -125,8 +116,10 @@ class Navigator:
                     self.record=json.dumps(data,separators=(',',':'))
                     self.series.append(data)
 
+                    df=pd.DataFrame(self.series)
+                    df.to_csv(self.fileName,index=False)
+
                     print(f'{b}{self.record}{w}\n')
-                    self.manage_data_backup('raw',['json','csv'])
             
         try:
             payoutsBlock=WebDriverWait(self.driver,30).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))
@@ -152,6 +145,7 @@ class Navigator:
             self.start()        
     
     def start(self):
+        self.manage_data_backup()
         source_thread=threading.Thread(target=self.extract_data_from_game_engine)
         self.navigate_to_game()
         source_thread.start()
