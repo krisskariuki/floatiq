@@ -50,7 +50,7 @@ class Navigator:
         
         self.driver=webdriver.Chrome(options=options,service=service)
 
-    def manage_data_backup(self,folderName='raw',fileName='raw_data'):
+    def manage_data_backup(self,folderName='db',fileName='raw'):
         file_id=0
 
         while (os.path.exists(f'{folderName}/{fileName}_{file_id}.csv')):
