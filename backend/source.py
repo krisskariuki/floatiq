@@ -108,7 +108,7 @@ class Navigator:
 
             if old!=recent:
                     old=recent
-                    multiplier=float(recent[0].text.replace('x',''))
+                    multiplier=float(recent[0].text.replace('x','').replace(',',''))
                     bets=int(self.driver.find_element(By.XPATH,'//*[@class="all-bets-block d-flex justify-content-between align-items-center px-2 pb-1"]').find_elements(By.XPATH,'.//div')[0].find_elements(By.XPATH,'.//div')[1].text)
 
                     timestamp=datetime.now().isoformat(sep=' ',timespec='seconds')
