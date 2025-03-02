@@ -124,7 +124,7 @@ class Navigator:
                     unix_time=int(datetime.now().timestamp())
 
                     data={'round_id':round_id,'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
-                    self.record=json.dumps(data,separators=(',',':'))
+                    self.record=data
                     self.series.append(data)
 
                     pd.DataFrame([data]).to_csv(self.file_name, mode='a', index=False, header=not Path(self.file_name).exists())
@@ -163,22 +163,30 @@ class Navigator:
             
             if local_record!=current_record:
                 local_record=current_record
-                yield f'data: {self.record} \n\n'
             
             else:
                 multiplier=round(random.uniform(-0.50,0.50),2)
                 std_time=datetime.now().isoformat(sep=' ',timespec='seconds')
                 unix_time=int(datetime.now().timestamp())
-                temp_record={'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
-
-                yield f"data: {json.dumps(temp_record)}\n\n"
+                self.record={'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
             
             sleep(1)
 
     def expose(self):
         @app.route('/raw/stream')
-        def expose_data():
-            return Response(self.yield_data(),content_type='text/event-stream')
+        def stream():
+            def streamer():
+                local_record=None
+                while True:
+                    if self.record!=local_record:
+                        local_record=self.record
+                        yield f"data: {json.dumps(self.record,separators=(',',':'))}\n\n"
+                    else:
+                        pass
+
+                    sleep(0.1)
+                
+            return Response(streamer(),content_type='text/event-stream')
 
         @app.route('/raw/latest')
         def latest():
