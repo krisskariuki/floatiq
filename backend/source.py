@@ -170,7 +170,7 @@ class Navigator:
                 unix_time=int(datetime.now().timestamp())
                 self.record={'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
             
-            sleep(1)
+            sleep(0.5)
 
     def expose(self):
         @app.route('/raw/stream')
@@ -181,9 +181,6 @@ class Navigator:
                     if self.record!=local_record:
                         local_record=self.record
                         yield f"data: {json.dumps(self.record,separators=(',',':'))}\n\n"
-                    else:
-                        pass
-
                     sleep(0.1)
                 
             return Response(streamer(),content_type='text/event-stream')
@@ -201,16 +198,14 @@ class Navigator:
     def start(self):
         source_thread=threading.Thread(target=self.extract_data_from_game_engine)
         yielder_thread=threading.Thread(target=self.yield_data,daemon=True)
+        expose_thread=threading.Thread(target=self.expose,daemon=True)
 
         self.manage_data_backup()
         self.navigate_to_game()
 
         source_thread.start()
         yielder_thread.start()
-        self.expose()
-
-
-       
+        expose_thread.start()
 
 mozzartGame=Navigator((PHONE,PASSWORD),navigator_arguments.browse)
 mozzartGame.start()
