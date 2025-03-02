@@ -10,21 +10,15 @@ import random
 app=Flask(__name__)
 CORS(app)
 
-formatFilePath='config/format.json'
-with open(formatFilePath,'r') as formatFile:
-    formatData=json.load(formatFile)
-    
-sseUrl='http://127.0.0.1:8080/raw/stream'
-
 class Transformer:
-    def __init__(self,sourceUrl,token,timeFrame):
+    def __init__(self,sourceUrl,token,timeframe):
         self.source=SSEClient(sourceUrl)
         self.flop=float(token['flop'])
-        self.timeUnit=timeFrame["unit"]
-        self.timeStep=timeFrame["interval"]
+        self.time_unit=timeframe["unit"]
+        self.time_step=timeframe["interval"]
         
         self.id=0
-        self.noise=0
+        self.multiplier=0
         self.Open=0
         self.High=float('-inf')
         self.Low=float('inf')
@@ -46,11 +40,8 @@ class Transformer:
             'minute':lambda T:datetime.now().minute%T==0 and datetime.now().second==0,
             'hour':lambda T:datetime.now().hour%T==0 and datetime.now().minute==0 and datetime.now().second==0,
             'day':lambda T:datetime.now().day%T==0 and datetime.now().hour==0 and datetime.now().minute==0 and datetime.now().second==0,
-
-            'week':lambda T:datetime.now().isocalendar()[1]%T==0 and datetime.now().second==0,
-            'month':lambda T:datetime.now().month%T==0 and datetime.now().second==0
         }
-        return timerRef[self.timeUnit](self.timeStep)
+        return timerRef[self.time_unit](self.time_step)
             
     def GENERATOR(self):
         while True:
@@ -61,11 +52,10 @@ class Transformer:
         for record in self.source:
             record=json.loads(record.data)
             
-            self.noise=record['noise']
-            self.traffic=record['bets']
+            self.multiplier=record['multiplier']
 
-            if self.noise>=1:
-                if self.noise>self.flop:
+            if self.multiplier>=1:
+                if self.multiplier>self.flop:
                     self.Coef+=self.flop-1
                     self.Close+=self.flop-1
                 else:
@@ -76,7 +66,7 @@ class Transformer:
                 
             self.High=max(self.Open,self.High,self.Close)
             self.Low=min(self.Open,self.Low,self.Close)
-            self.record={'traffic':self.traffic,'time':self.Dttm,'noise':self.noise,'coef':self.Coef,'open':round(self.Open,2),'high':round(self.High,2),'low':round(self.Low,2),'close':round(self.Close,2)}
+            self.record={'time':self.Dttm,'multiplier':self.multiplier,'coef':self.Coef,'open':round(self.Open,2),'high':round(self.High,2),'low':round(self.Low,2),'close':round(self.Close,2)}
             
             if self.TIMER():
                 self.Dttm=datetime.now().timestamp()
@@ -89,29 +79,32 @@ class Transformer:
             time.sleep(1)
             
     def SERVE_SERIES(self):
-        EPoint=f"series/{timeFrame['name']}/{token['alias']}"
-        url=f"/data/{EPoint}"
+        EPoint=f"series/{timeframe['name']}/{token['name']}"
+        url=f"/market/{EPoint}"
 
         app.add_url_rule(url,endpoint=EPoint,view_func=lambda:jsonify(self.series))
         
     def SERVE_LATEST(self):
-        EPoint=f"latest/{timeFrame['name']}/{token['alias']}"
-        url=f"/data/{EPoint}"
+        EPoint=f"latest/{timeframe['name']}/{token['name']}"
+        url=f"/market/{EPoint}"
 
         app.add_url_rule(url,endpoint=EPoint,view_func=lambda:jsonify(self.record))
     
     def SERVE_STREAM(self):
-        EPoint=f"stream/{timeFrame['name']}/{token['alias']}"
-        url=f"/data/{EPoint}"
+        EPoint=f"stream/{timeframe['name']}/{token['name']}"
+        url=f"/market/{EPoint}"
 
         app.add_url_rule(url,endpoint=EPoint,view_func=lambda:Response(self.GENERATOR(),mimetype='text/event-stream'))
 
-timeFrames=formatData['timeframes']
-tokens=formatData['tokens']
+with open('config/format.json','r') as file:
+    format_data=json.load(file)
 
-for timeFrame in timeFrames:
+timeframes=format_data['timeframes']
+tokens=format_data['tokens']
+
+for timeframe in timeframes:
     for token in tokens:
-        Transformer(sseUrl,token,timeFrame)
+        Transformer('http://127.0.0.1:8080/raw/stream',token,timeframe)
         
 if __name__=='__main__':
     app.run(debug=True,host='0.0.0.0',port=8000)
