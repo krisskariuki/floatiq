@@ -2,32 +2,35 @@ from selenium_imports import *
 from datetime import datetime
 from colorama import Fore
 import time
-import threading
+import sys
 
 w=Fore.WHITE
 r=Fore.RED
 g=Fore.GREEN
-b=Fore.BLUE
 y=Fore.YELLOW
 c=Fore.CYAN
 m=Fore.MAGENTA
+b=Fore.LIGHTBLACK_EX
 
 class Scraper:
     def __init__(self,target_url:str,headless:bool=False)->None:
         self.target_url=target_url
         self.headless=headless
-        self.wait_time=30
+        self.wait_time=10
         self.record=None
         self.series=None
         self.actions_array=[]
+        self.chromedriver_path=ChromeDriverManager().install()
+        self.start_driver()
         
+    def start_driver(self):
         options=webdriver.ChromeOptions()
-        service=Service(ChromeDriverManager().install())
+        service=Service(self.chromedriver_path)
         
         headmode_args=['--ignore-certificate-errors','--disable-notifications']
         headless_args=['--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--enable-unsafe-swiftshader']+headmode_args
         
-        args=headless_args if headless else headmode_args
+        args=headless_args if self.headless else headmode_args
         
         for arg in args:
             options.add_argument(arg)
@@ -35,6 +38,14 @@ class Scraper:
 
         self.driver=webdriver.Chrome(service=service,options=options)
     
+    def restart_driver(self):
+        try:
+            self.driver.quit()
+        except:
+            pass
+        time.sleep(1)
+        self.start_driver()
+
     def action(self,action='locate',attribute='',sleep_time=0,message='',input_value=''):
         action={key:value for key,value in locals().items() if key!="self"}
         self.actions_array.append(action)
@@ -77,8 +88,8 @@ class Scraper:
         
         execute(action_table[action['action']])
     
-    def navigate(self):
-        while True:
+    def navigate(self,retries=5):
+        while retries>0:
             try:
                 self.driver.get(self.target_url)
                 print(f'{c}navigating to {self.target_url}...{w}')
@@ -87,15 +98,16 @@ class Scraper:
                         self.parse(action)
 
                     except Exception as e:
-                        print(f'{r}an error occured during navigation\n{w}')
+                        print(f'{y}navigation procedure error...\n{w}')
                         raise
                     
-                print(f'{g}all actions completed successfully{w}')
-
-                break
+                print(f'{g}navigation procedure successful{w}')
+                return
 
             except Exception as e:
-                print(f'{m}{e}\n{c}restarting...{w}')
-                self.driver.quit()
-                time.sleep(1)
-                self.__init__(self.target_url,self.headless)
+                print(f'{b}[{retries}]\n{c}restarting...{w}')
+                retries-=1
+                self.restart_driver()
+        
+        print(f'{r}max retries reached{w}')
+        sys.exit(1)
