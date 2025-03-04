@@ -3,6 +3,7 @@ from datetime import datetime
 from colorama import Fore
 import time
 import sys
+import os
 
 w=Fore.WHITE
 r=Fore.RED
@@ -13,12 +14,16 @@ m=Fore.MAGENTA
 b=Fore.LIGHTBLACK_EX
 
 class Scraper:
-    def __init__(self,target_url:str,headless:bool=False)->None:
+    def __init__(self,target_url:str,headless:bool=False,wait_time:int=10)->None:
+
         self.target_url=target_url
         self.headless=headless
-        self.wait_time=10
+        self.wait_time=wait_time
+
+        self.file_name=None
         self.record=None
         self.series=None
+        
         self.actions_array=[]
         self.chromedriver_path=ChromeDriverManager().install()
         self.start_driver()
@@ -45,6 +50,19 @@ class Scraper:
             pass
         time.sleep(1)
         self.start_driver()
+
+    def manage_backup(self,folder_name='db',file_name='raw'):
+        file_id=0
+
+        while (os.path.exists(f'{folder_name}/{file_name}_{file_id}.csv')):
+            file_id+=1
+
+        file_to_check=f'{folder_name}/{file_name}_{file_id}.csv'
+
+        directory=os.path.dirname(file_to_check)
+        os.makedirs(directory,exist_ok=True)
+
+        self.file_name=file_to_check
 
     def action(self,action='locate',attribute='',sleep_time=0,message='',input_value=''):
         action={key:value for key,value in locals().items() if key!="self"}
