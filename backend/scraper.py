@@ -1,6 +1,6 @@
 from selenium_imports import *
 from datetime import datetime
-from colorama import Fore
+from colorama import Fore,init
 from pathlib import Path
 import pandas as pd
 import time
@@ -8,6 +8,7 @@ import sys
 import os
 import json
 
+init(autoreset=True)
 w=Fore.WHITE
 r=Fore.RED
 g=Fore.GREEN
@@ -71,7 +72,7 @@ class Scraper:
         action={key:value for key,value in locals().items() if key!="self"}
         self.actions_array.append(action)
     
-    def watch(self):
+    def watch_aviator(self):
         old,round_id,multiplier=None,0,0
 
         def check_for_new_data(recent):
@@ -91,18 +92,18 @@ class Scraper:
                     if self.file_name:
                         self.save_record()
 
-                    print(f'{b}{json.dumps(self.record,separators=(",",":"))}{w}\n')
+                    print(f'{b}{json.dumps(self.record,separators=(",",":"))}\n')
         try:
             payouts_block=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))
             if payouts_block:
-                print(f'{g}connected to game engine successfully{w}')
+                print(f'{g}connected to game engine successfully')
 
             while True:
                 latest_multipliers=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
                 check_for_new_data(latest_multipliers)
                 time.sleep(0.1)
         except Exception as e:
-            print(f'{r}game engine error!\n{c}restarting...{w}')
+            print(f'{r}game engine error!\n{c}restarting...')
             self.restart_driver()
                 
 
@@ -110,10 +111,10 @@ class Scraper:
         def locate():
             element=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,f'//*[@{action["attribute"]}]')))
             if element:
-                print(f'{g}element located{w}')
+                print(f'{g}element located')
                 return True
             else:
-                print(f'{r}element not located{w}')
+                print(f'{r}element not located')
                 return False
             
         def click():
@@ -132,7 +133,7 @@ class Scraper:
         def execute(function):
             time.sleep(action['sleep_time'])
             if action['message']:
-                print(f'{c}{action["message"]}{w}')
+                print(f'{c}{action["message"]}')
                 
             function()
 
@@ -149,25 +150,25 @@ class Scraper:
         while retries>0:
             try:
                 self.driver.get(self.target_url)
-                print(f'{c}navigating to {self.target_url}...{w}')
+                print(f'{c}navigating to {self.target_url}...')
                 for action in self.actions_array:
                     try:
                         self.parse(action)
 
                     except Exception as e:
-                        print(f'{y}navigation procedure error!\n{w}')
+                        print(f'{y}navigation procedure error!\n')
                         raise
                     
                 if callable(callback):
                     callback()
                 else:
-                    print(f'{g}navigation procedure successful{w}')
+                    print(f'{g}navigation procedure successful')
                     return
 
             except Exception as e:
-                print(f'{b}[{retries}]\n{c}restarting...{w}')
+                print(f'{b}[{retries}]\n{c}restarting...')
                 retries-=1
                 self.restart_driver()
         
-        print(f'{r}max retries reached{w}')
+        print(f'{r}max retries reached')
         sys.exit(1)
