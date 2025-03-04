@@ -6,6 +6,7 @@ import pandas as pd
 import time
 import sys
 import os
+import json
 
 w=Fore.WHITE
 r=Fore.RED
@@ -53,18 +54,20 @@ class Scraper:
         time.sleep(1)
         self.start_driver()
 
-    def manage_backup(self,folder_name='db',file_name='raw'):
-        file_id=0
+    def manage_backup(self,folder_name='db',file_name='mozzart-aviator'):
+        os.makedirs(folder_name,exist_ok=True)
 
-        while (os.path.exists(f'{folder_name}/{file_name}_{file_id}.csv')):
-            file_id+=1
+        file_id=datetime.now().strftime('%Y%m%d_%H%M')
+        backup_file=f'{folder_name}/{file_name}_{file_id}.csv'
 
-        file_to_check=f'{folder_name}/{file_name}_{file_id}.csv'
+        if not os.path.exists(backup_file):
+            print(f'{g}backup file initialized: {backup_file}{w}\n\n')
+            pd.DataFrame(columns=['round_id','multiplier','std_time','unix_time']).to_csv(backup_file,index=False)
+        
+        self.file_name=backup_file
 
-        directory=os.path.dirname(file_to_check)
-        os.makedirs(directory,exist_ok=True)
-
-        self.file_name=file_to_check
+        if self.record:
+            pd.DataFrame([self.record]).to_csv(self.file_name,mode='a',index=False,header=False)
 
     def action(self,action='locate',attribute='',sleep_time=0,message='',input_value=''):
         action={key:value for key,value in locals().items() if key!="self"}
@@ -86,14 +89,13 @@ class Scraper:
                     data={'round_id':round_id,'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
                     self.record=data
                     self.series.append(data)
-                    
-                    # pd.DataFrame([data]).to_csv(self.file_name, mode='a', index=False, header=not Path(self.file_name).exists())
+                    self.manage_backup()
 
-                    print(f'{b}{self.record}{w}\n')
+                    print(f'{b}{json.dumps(self.record,separators=(",",":"))}{w}\n')
         try:
             payouts_block=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))
             if payouts_block:
-                print(f'{g}connected to game engine successfully\n\n{w}')
+                print(f'{g}connected to game engine successfully{w}')
 
             while True:
                 latest_multipliers=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
