@@ -28,7 +28,6 @@ class Scraper:
         self.series=[]
         
         self.actions_array=[]
-        self.chromedriver_path=ChromeDriverManager().install()
         self.start_driver()
         
     def start_driver(self):
