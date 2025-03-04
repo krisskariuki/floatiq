@@ -32,19 +32,19 @@ class Scraper:
         self.start_driver()
         
     def start_driver(self):
-        options=webdriver.ChromeOptions()
-        service=Service(self.chromedriver_path)
-        
+        options=uc.ChromeOptions()
+        width,height=800,1080
+
         headmode_args=['--ignore-certificate-errors','--disable-notifications']
-        headless_args=['--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--enable-unsafe-swiftshader']+headmode_args
+        headless_args=['--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--enable-unsafe-swiftshader',f'--window-size={width},{height}']+headmode_args
         
         args=headless_args if self.headless else headmode_args
         
         for arg in args:
             options.add_argument(arg)
-        options.add_experimental_option('detach',True)
 
-        self.driver=webdriver.Chrome(service=service,options=options)
+        self.driver=uc.Chrome(options=options)
+        self.driver.set_window_size(width,height)
     
     def restart_driver(self):
         try:
@@ -53,20 +53,19 @@ class Scraper:
             pass
         time.sleep(1)
         self.start_driver()
-
-    def manage_backup(self,folder_name='db',file_name='mozzart-aviator'):
+    
+    def manage_backup(self,folder_name='backup',base_file_name='backup-file'):
         os.makedirs(folder_name,exist_ok=True)
 
-        file_id=datetime.now().strftime('%Y%m%d_%H%M')
-        backup_file=f'{folder_name}/{file_name}_{file_id}.csv'
+        if self.file_name is None:
+            file_id=datetime.now().strftime('%Y%m%d_%H%M')
+            self.file_name=f"{folder_name}/{base_file_name}_{file_id}.csv"
 
-        if not os.path.exists(backup_file):
-            print(f'{g}backup file initialized: {backup_file}{w}\n\n')
-            pd.DataFrame(columns=['round_id','multiplier','std_time','unix_time']).to_csv(backup_file,index=False)
-        
-        self.file_name=backup_file
+            if not os.path.exists(self.file_name):
+                pd.DataFrame(columns=['round_id', 'multiplier', 'std_time', 'unix_time']).to_csv(self.file_name,index=False)
 
-        if self.record:
+    def save_record(self):
+        if self.record and isinstance(self.record,dict):
             pd.DataFrame([self.record]).to_csv(self.file_name,mode='a',index=False,header=False)
 
     def action(self,action='locate',attribute='',sleep_time=0,message='',input_value=''):
@@ -89,7 +88,9 @@ class Scraper:
                     data={'round_id':round_id,'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
                     self.record=data
                     self.series.append(data)
-                    self.manage_backup()
+
+                    if self.file_name:
+                        self.save_record()
 
                     print(f'{b}{json.dumps(self.record,separators=(",",":"))}{w}\n')
         try:
