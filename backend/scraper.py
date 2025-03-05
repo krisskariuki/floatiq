@@ -65,8 +65,9 @@ class Scraper:
                 pd.DataFrame(columns=['round_id', 'multiplier', 'std_time', 'unix_time']).to_csv(self.file_name,index=False)
 
     def save_record(self):
-        if self.record and isinstance(self.record,dict):
-            pd.DataFrame([self.record]).to_csv(self.file_name,mode='a',index=False,header=False)
+        with self.record_lock:
+            if self.record and isinstance(self.record,dict):
+                pd.DataFrame([self.record]).to_csv(self.file_name,mode='a',index=False,header=False)
 
     def action(self,action='locate',attribute='',sleep_time=0,message='',input_value=''):
         action={key:value for key,value in locals().items() if key!="self"}
@@ -86,8 +87,9 @@ class Scraper:
                     unix_time=int(datetime.now().timestamp())
 
                     data={'round_id':round_id,'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
-                    self.record=data
-                    self.series.append(data)
+                    with self.record_lock,self.series_lock:
+                        self.record=data
+                        self.series.append(data)
 
                     if self.file_name:
                         self.save_record()
