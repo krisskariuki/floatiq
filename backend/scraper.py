@@ -7,6 +7,7 @@ import time
 import sys
 import os
 import json
+import threading
 
 init(autoreset=True)
 w=Fore.WHITE
@@ -23,6 +24,9 @@ class Scraper:
         self.target_url=target_url
         self.headless=headless
         self.wait_time=wait_time
+
+        self.record_lock=threading.Lock()
+        self.series_lock=threading.Lock()
 
         self.file_name=None
         self.record=None
@@ -63,6 +67,7 @@ class Scraper:
 
             if not os.path.exists(self.file_name):
                 pd.DataFrame(columns=['round_id', 'multiplier', 'std_time', 'unix_time']).to_csv(self.file_name,index=False)
+                print(f'{g}backup file initialized: {self.file_name}')
 
     def save_record(self):
         with self.record_lock:
@@ -105,7 +110,7 @@ class Scraper:
                 check_for_new_data(latest_multipliers)
                 time.sleep(0.1)
         except Exception as e:
-            print(f'{r}game engine error!\n{c}restarting...')
+            print(f'{r}game engine error!\n{y}{e}\n{c}restarting...')
             self.restart_driver()
                 
 
@@ -158,7 +163,7 @@ class Scraper:
                         self.parse(action)
 
                     except Exception as e:
-                        print(f'{y}navigation procedure error!\n')
+                        print(f'{y}navigation procedure error!\n{y}{e}\n')
                         raise
                     
                 if callable(callback):
@@ -167,7 +172,7 @@ class Scraper:
                     print(f'{g}navigation procedure successful')
                     return
 
-            except Exception as e:
+            except:
                 print(f'{b}[{retries}]\n{c}restarting...')
                 retries-=1
                 self.restart_driver()
