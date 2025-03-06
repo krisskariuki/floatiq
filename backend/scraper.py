@@ -19,11 +19,12 @@ m=Fore.MAGENTA
 b=Fore.LIGHTBLACK_EX
 
 class Scraper:
-    def __init__(self,target_url:str,headless:bool=False,wait_time:int=10)->None:
+    def __init__(self,target_url:str,headless:bool=False,wait_time:int=10,retries:int=5)->None:
 
         self.target_url=target_url
         self.headless=headless
         self.wait_time=wait_time
+        self.retries=retries
 
         self.record_lock=threading.Lock()
         self.series_lock=threading.Lock()
@@ -154,8 +155,8 @@ class Scraper:
         
         execute(action_table[action['action']])
     
-    def navigate(self,callback='',retries=5):
-        while retries>0:
+    def navigate(self,callback=''):
+        while self.retries>0:
             try:
                 self.driver.get(self.target_url)
                 print(f'{c}navigating to {self.target_url}...')
@@ -174,8 +175,8 @@ class Scraper:
                     return
 
             except:
-                print(f'{b}[{retries}]\n{c}restarting...')
-                retries-=1
+                print(f'{b}[{self.retries}]\n{c}restarting...')
+                self.retries-=1
                 self.restart_driver()
         
         print(f'{r}max retries reached')
