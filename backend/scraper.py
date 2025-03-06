@@ -115,7 +115,7 @@ class Scraper:
             self.restart_driver()
                 
 
-    def parse(self,action):
+    def parse_action(self,action):
         def locate():
             element=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,f'//*[@{action["attribute"]}]')))
             if element:
@@ -161,7 +161,7 @@ class Scraper:
                 print(f'{c}navigating to {self.target_url}...')
                 for action in self.actions_array:
                     try:
-                        self.parse(action)
+                        self.parse_action(action)
 
                     except Exception as e:
                         print(f'{y}navigation procedure error!\n{y}{e}\n')
