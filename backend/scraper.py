@@ -49,13 +49,7 @@ class Scraper:
 
         self.driver=uc.Chrome(options=options)
         self.driver.set_window_size(width,height)
-        stealth(self.driver,
-        languages=["en-US", "en"],
-        vendor="Google Inc.",
-        platform="Win32",
-        webgl_vendor="Intel Inc.",
-        renderer="Intel Iris OpenGL Engine",
-        fix_hairline=True)
+        stealth(driver=self.driver,platform='Win32',fix_hairline=True)
     
     def restart_driver(self):
         try:
