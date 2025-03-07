@@ -20,6 +20,16 @@ m=Fore.MAGENTA
 b=Fore.LIGHTBLACK_EX
 
 # consider implementing an action for callbacks so that custom & internal functions can be pushed to the actions_array. This might solve many blockades & complexities
+
+
+def main_thread():
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print('exiting program ...')
+        sys.exit(1)
+        
 class Scraper:
     def __init__(self,target_url:str,headless:bool=False,wait_time:int=10,retries:int=5)->None:
 
