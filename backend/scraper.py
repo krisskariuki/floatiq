@@ -3,6 +3,7 @@ from datetime import datetime
 from colorama import Fore,init
 from pathlib import Path
 import pandas as pd
+from types import FunctionType
 import time
 import sys
 import os
@@ -155,7 +156,7 @@ class Scraper:
         
         execute(action_table[action['action']])
     
-    def navigate(self,callback=''):
+    def navigate(self,*args:FunctionType):
         while self.retries>0:
             try:
                 self.driver.get(self.target_url)
@@ -167,12 +168,12 @@ class Scraper:
                     except Exception as e:
                         print(f'{y}navigation procedure error!\n{y}{e}\n')
                         raise
-                    
-                if callable(callback):
-                    callback()
-                else:
-                    print(f'{g}navigation procedure successful')
-                    return
+                for arg in args:   
+                    if callable(arg):
+                        arg()
+                    else:
+                        print(f'{g}navigation procedure successful')
+                        return
 
             except:
                 print(f'{b}[{self.retries}]\n{c}restarting...')
