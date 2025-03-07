@@ -1,4 +1,4 @@
-from scraper import Scraper
+from scraper import Scraper,main_thread
 from dotenv import load_dotenv
 from flask import Flask,Response,jsonify
 from flask_cors import CORS
@@ -54,5 +54,7 @@ def stream_data():
 def run_app():
     app.run(host='0.0.0.0',port=8080,threaded=True)
 
-threading.Thread(target=scraper.navigate,args=(scraper.watch_aviator,)).start()
+threading.Thread(target=scraper.navigate,args=(scraper.watch_aviator,),daemon=True).start()
 threading.Thread(target=run_app,daemon=True).start()
+
+main_thread()
