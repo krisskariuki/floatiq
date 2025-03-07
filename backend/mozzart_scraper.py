@@ -2,6 +2,10 @@ from scraper import Scraper,main_thread
 from dotenv import load_dotenv
 import os
 import argparse
+<<<<<<< HEAD
+=======
+import threading
+>>>>>>> 07a2e4d (-moved the routing logic to the scraper utility script for reusability)
 
 load_dotenv()
 PHONE=os.getenv('PHONE')
