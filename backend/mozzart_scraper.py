@@ -2,7 +2,6 @@ from scraper import Scraper,main_thread
 from dotenv import load_dotenv
 import os
 import argparse
-import threading
 
 load_dotenv()
 PHONE=os.getenv('PHONE')
@@ -26,3 +25,5 @@ scraper.action(action='callback',callback=scraper.watch_aviator)
 scraper.action(action='callback',callback=scraper.expose_data)
 
 scraper.navigate()
+
+main_thread()
