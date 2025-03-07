@@ -110,7 +110,7 @@ class Scraper:
             while True:
                 latest_multipliers=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
                 check_for_new_data(latest_multipliers)
-                time.sleep(0.1)
+                time.sleep(1)
         except Exception as e:
             print(f'{r}game engine error!\n{y}{e}\n{c}restarting...')
             self.restart_driver()
