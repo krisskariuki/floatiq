@@ -1,4 +1,4 @@
-from scraper import Scraper
+from scraper import Scraper,main_thread
 from dotenv import load_dotenv
 import os
 import argparse
