@@ -165,9 +165,9 @@ class Scraper:
                         raise
             except Exception as e:
                 print(f'{r}game engine error!\n{y}{e}\n{c}restarting...')
-                self.navigate()
+                self.restart()
             
-        threading.Thread(target=run_aviator).start()
+        threading.Thread(target=run_aviator,daemon=True).start()
 
     def parse_action(self,action):
         def locate():
