@@ -165,7 +165,7 @@ class Scraper:
                         raise
             except Exception as e:
                 print(f'{r}game engine error!\n{y}{e}\n{c}restarting...')
-                self.restart()
+                self.restart_driver()
             
         threading.Thread(target=run_aviator,daemon=True).start()
 
