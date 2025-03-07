@@ -19,6 +19,7 @@ c=Fore.CYAN
 m=Fore.MAGENTA
 b=Fore.LIGHTBLACK_EX
 
+# consider implementing an action for callbacks so that custom & internal functions can be pushed to the actions_array. This might solve many blockades & complexities
 class Scraper:
     def __init__(self,target_url:str,headless:bool=False,wait_time:int=10,retries:int=5)->None:
 
@@ -29,8 +30,11 @@ class Scraper:
 
         self.record_lock=threading.Lock()
         self.series_lock=threading.Lock()
-
+        
+        self.round_id=0
         self.file_name=None
+        self.folder_name='backup'
+        self.base_file_name='file'
         self.record=None
         self.series=[]
         
@@ -61,15 +65,15 @@ class Scraper:
         time.sleep(1)
         self.start_driver()
     
-    def manage_backup(self,folder_name='backup',base_file_name='backup-file'):
-        os.makedirs(folder_name,exist_ok=True)
+    def manage_backup(self):
+        os.makedirs(self.folder_name,exist_ok=True)
 
         if self.file_name is None:
             file_id=datetime.now().strftime('%Y%m%d_%H%M')
-            self.file_name=f"{folder_name}/{base_file_name}_{file_id}.csv"
+            self.file_name=f"{self.folder_name}/{self.base_file_name}_{file_id}.csv"
 
             if not os.path.exists(self.file_name):
-                pd.DataFrame(columns=['round_id', 'multiplier', 'std_time', 'unix_time']).to_csv(self.file_name,index=False)
+                pd.DataFrame(columns=['self.round_id', 'multiplier', 'std_time', 'unix_time']).to_csv(self.file_name,index=False)
                 print(f'{g}backup file initialized: {self.file_name}')
 
     def save_record(self):
@@ -82,19 +86,19 @@ class Scraper:
         self.actions_array.append(action)
     
     def watch_aviator(self):
-        old,round_id,multiplier=None,0,0
+        old=None
 
         def check_for_new_data(recent):
-            nonlocal old,round_id,multiplier
+            nonlocal old
 
             if old!=recent:
                     old=recent
-                    round_id+=1
+                    self.round_id+=1
                     multiplier=float(recent[0].text.replace('x','').replace(',',''))
                     std_time=datetime.now().isoformat(sep=' ',timespec='seconds')
                     unix_time=int(datetime.now().timestamp())
 
-                    data={'round_id':round_id,'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
+                    data={'self.round_id':self.round_id,'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
                     with self.record_lock,self.series_lock:
                         self.record=data
                         self.series.append(data)
@@ -107,6 +111,7 @@ class Scraper:
             payouts_block=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))
             if payouts_block:
                 print(f'{g}connected to game engine successfully')
+                self.manage_backup()
 
             while True:
                 latest_multipliers=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
