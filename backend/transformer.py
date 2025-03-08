@@ -104,7 +104,7 @@ class Transformer:
                     series.append(record)
                     print(f'{c}reset has occured!')
 
-                print(f'{b}round_id:{Id} | time:{std_time} | multiplier:{multiplier} | open:{Open} | high:{High} | low:{Low} | close:{Close}')
+                print(f'{b}round_id:{Id} | time:{std_time} | open:{Open} | high:{High} | low:{Low} | close:{Close} | multiplier:{multiplier}')
                 time.sleep(1)
 
             return record,series
