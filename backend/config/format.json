@@ -11,7 +11,9 @@
     {"name":"fifty","alias":"FIFT","flop":50},
     {"name":"sixty","alias":"SIXT","flop":60}
     ],
-    "timeframes":[
+    "time_frames":[
+    {"name":"minute_10","unit":"minute","interval":10},
+    {"name":"minute_30","unit":"minute","interval":30},    
     {"name":"hour_1","unit":"hour","interval":1},
     {"name":"hour_4","unit":"hour","interval":4},
     {"name":"hour_6","unit":"hour","interval":6},
