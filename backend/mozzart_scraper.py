@@ -22,7 +22,7 @@ scraper.action(action='send',attribute='placeholder="Password"',message='writing
 scraper.action(action='click',attribute='alt="Aviator"',message='connecting to game engine...',sleep_time=1)
 scraper.action(action='callback',callback=scraper.watch_aviator)
 
-scraper.expose_data()
 scraper.navigate()
+scraper.expose_data()
 
 main_thread()
