@@ -1,7 +1,6 @@
 from selenium_imports import *
 from datetime import datetime
 from colorama import Fore,init
-from pathlib import Path
 import pandas as pd
 from flask import Flask,Response,jsonify
 from flask_cors import CORS
@@ -23,8 +22,6 @@ b=Fore.LIGHTBLACK_EX
 
 app=Flask(__name__)
 CORS(app)
-# consider implementing an action for callbacks so that custom & internal functions can be pushed to the actions_array. This might solve many blockades & complexities
-
 
 def main_thread():
     try:
@@ -140,7 +137,7 @@ class Scraper:
                     std_time=datetime.now().isoformat(sep=' ',timespec='seconds')
                     unix_time=int(datetime.now().timestamp())
 
-                    data={'self.round_id':self.round_id,'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
+                    data={'round_id':self.round_id,'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
                     with self.record_lock,self.series_lock:
                         self.record=data
                         self.series.append(data)
@@ -164,8 +161,8 @@ class Scraper:
                     except:
                         raise
             except Exception as e:
-                print(f'{r}game engine error!\n{y}{e}\n{c}restarting...')
-                self.restart_driver()
+                print(f'{r}game engine error!\n{y}{e}')
+                self.navigate()
             
         threading.Thread(target=run_aviator,daemon=True).start()
 
