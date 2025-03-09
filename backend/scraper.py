@@ -4,6 +4,7 @@ from colorama import Fore,init
 import pandas as pd
 from flask import Flask,Response,jsonify
 from flask_cors import CORS
+from queue import Queue
 import time
 import sys
 import os
@@ -28,7 +29,7 @@ def main_thread():
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print('exiting program ...')
+        print(f'{m}exiting program ...')
         sys.exit(1)
         
 class Scraper:
@@ -48,6 +49,8 @@ class Scraper:
         self.base_file_name='file'
         self.record=None
         self.series=[]
+
+        self.clients=set()
         
         self.actions_array=[]
         self.start_driver()
@@ -96,7 +99,7 @@ class Scraper:
         action={key:value for key,value in locals().items() if key!="self"}
         self.actions_array.append(action)
     
-    def expose_data(self):      
+    def broadcast(self):      
         @app.route('/mozzart_aviator/latest',methods=['GET'])
         def get_latest():
             with self.record_lock:
@@ -110,12 +113,16 @@ class Scraper:
         @app.route('/mozzart_aviator/stream',methods=['GET'])
         def stream_data():
             def event_stream():
-                last_seen=None
+                queue=Queue()
+                self.clients.add(queue)
+
+                with self.record_lock:
+                    if self.record:
+                        yield f"data:{json.dumps(self.record,separators=(',',':'))}\n\n"
+                
                 while True:
-                    with self.record_lock:
-                        if self.record and self.record!=last_seen:
-                            last_seen=self.record.copy()
-                            yield f"data:{json.dumps(last_seen,separators=(',',':'))}\n\n"
+                    record=queue.get()
+                    yield f"data:{json.dumps(record,separators=(',',':'))}\n\n"
                     time.sleep(1)
             return Response(event_stream(),mimetype='text/event-stream')
 
@@ -141,11 +148,17 @@ class Scraper:
                     with self.record_lock,self.series_lock:
                         self.record=data
                         self.series.append(data)
-
+                        
                     if self.file_name:
                         self.save_record()
+                    
+                    for client in list(self.clients):
+                        try:
+                            client.put(self.record)
+                        except:
+                            self.clients.remove(client)
 
-                    print(f'{b}{json.dumps(self.record,separators=(",",":"))}\n')
+                    print(f'{b}round_id: {self.round_id} | std_time: {std_time} | multiplier: {multiplier}')
         def run_aviator():
             try:
                 payouts_block=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))

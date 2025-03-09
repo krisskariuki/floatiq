@@ -23,6 +23,6 @@ scraper.action(action='click',attribute='alt="Aviator"',message='connecting to g
 scraper.action(action='callback',callback=scraper.watch_aviator)
 
 scraper.navigate()
-scraper.expose_data()
+scraper.broadcast()
 
 main_thread()
