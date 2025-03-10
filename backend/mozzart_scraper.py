@@ -13,7 +13,7 @@ parser_arguments=parser.parse_args()
 
 scraper=Scraper(target_url='https://www.mozzartbet.co.ke/en#/casino',wait_time=30,headless=parser_arguments.headless)
 
-scraper.folder_name='db'
+scraper.folder_name='backup'
 scraper.base_file_name='mozzart_aviator'
 
 scraper.action(action='click',attribute='class="login-link mozzart_ke"',message='logging in...')
