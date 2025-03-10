@@ -56,7 +56,7 @@ class File_sourcer:
             if i>len(self.series):
                 break
 
-file_sourcer=File_sourcer('db/mozzart.csv')
+file_sourcer=File_sourcer('db\mozzart_aviator_20250308_1255.csv')
 file_sourcer.start_server()
 
 main_thread()
