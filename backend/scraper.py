@@ -29,7 +29,7 @@ def main_thread():
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print(f'{m}exiting program ...')
+        print(f'{y}exiting program ...')
         sys.exit(1)
         
 class Scraper:
