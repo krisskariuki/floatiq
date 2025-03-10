@@ -5,6 +5,7 @@ import pandas as pd
 from flask import Flask,Response,jsonify
 from flask_cors import CORS
 from queue import Queue
+from waitress import serve
 import time
 import sys
 import os
@@ -126,10 +127,10 @@ class Scraper:
                     time.sleep(1)
             return Response(event_stream(),mimetype='text/event-stream')
 
-        def run_app():
-            app.run(host='0.0.0.0',port=8080,threaded=True)
+        def start_server():
+            serve(app,host='0.0.0.0',port=8080,channel_timeout=300,threads=50,backlog=1000,connection_limit=500)
         
-        threading.Thread(target=run_app,daemon=True).start()
+        threading.Thread(target=start_server,daemon=True).start()
         
     def watch_aviator(self):
         old=None
