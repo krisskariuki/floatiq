@@ -14,8 +14,8 @@ ip_address=socket.gethostbyname(socket.gethostname())
 port='8080'
 
 parser=argparse.ArgumentParser(description='simulate historic data using')
+parser.add_argument('source',type=str)
 parser.add_argument('--unalive',action='store_false')
-parser.add_argument('--source',type=str)
 parser_args=parser.parse_args()
 
 app = Flask(__name__)
