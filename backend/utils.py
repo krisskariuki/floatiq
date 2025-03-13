@@ -3,13 +3,6 @@ import sys
 import time
 
 init(autoreset=True)
-white=Fore.WHITE
-red=Fore.RED
-green=Fore.GREEN
-yellow=Fore.YELLOW
-cyan=Fore.CYAN
-magenta=Fore.MAGENTA
-brown=Fore.LIGHTBLACK_EX
 
 class Colors:
     def __init__(self):
@@ -19,7 +12,7 @@ class Colors:
         self.yellow=Fore.YELLOW
         self.cyan=Fore.CYAN
         self.magenta=Fore.MAGENTA
-        self.brown=Fore.LIGHTBLACK_EX
+        self.grey=Fore.LIGHTBLACK_EX
 
 colors=Colors()
 
