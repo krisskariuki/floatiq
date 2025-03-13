@@ -1,7 +1,7 @@
 from sseclient import SSEClient
 from datetime import datetime
 from utils import colors,main_thread
-from config import LOCAL_IP
+from config import LOCAL_IP,PRODUCER_PORT,TARGET_MULTIPLIERS,TIME_FRAMES
 import json
 import time
 import threading
@@ -13,34 +13,38 @@ def start_program_at_0sec():
         print(f"Starting in: {colors.cyan}{remaining}{colors.white} seconds",end="\r")
         time.sleep(0.5)
 
-init(autoreset=True)
-
 class Transformer:
-    def __init__(self,source_url):
-        self.source_url=source_url
-        self.sse_source=''
-        self.dataset={}
-    def connect(self):
-        try:
-            self.sse_source=SSEClient(self.source_url)
-            print(f'\n\n{colors.green}connected to: {colors.cyan}{self.source_url}\n')
-        except :
-            print(f'\n\n{colors.red}connection error!\n{colors.yellow}failed to connect to: {colors.cyan}{self.source_url}\n')
-            sys.exit(1)
+    def __init__(self):
+        self.recv_record={}
+        self.data_store={}
+        for timeframe in TIME_FRAMES:
+            for target in TARGET_MULTIPLIERS:
+                self.data_store[f"{timeframe}|{target}"]={
+                    'std_time':datetime.now().isoformat(sep=' ',timespec='seconds'),
+                    'unix_time':int(datetime.now().timestamp()),
+                    'open':0,
+                    'high':0,
+                    'low':0,
+                    'close':0
+                    }
 
-    
-    def transform(self,resource_file):
-        with open(resource_file,'r') as file:
-            resource_table=json.load(file)
+    def connect(self,source_url):
+        def run_connect():
+            try:
+                for item in SSEClient(source_url):
+                    self.recv_record=json.loads(item.data)
 
-        time_frames=resource_table['time_frames']
-        tokens=resource_table['tokens']
+                print(f'\n\n{colors.green}connected to: {colors.cyan}{self.source_url}\n')
 
-        for time_frame in time_frames:
-            for token in tokens:
-                self.generate_metrics(token['flop'],time_frame['name'])
+            except :
+                print(f'\n\n{colors.red}connection error!\n{colors.yellow}failed to connect to: {colors.cyan}{self.source_url}\n')
+                sys.exit(1)
+            
+            threading.Thread(target=run_connect,daemon=True).start()
 
-    def quantifier(self,target_multiplier,time_frame):
+
+    def run_transformer(self,target_multipliers,time_frames):
+        local_record=None
         last_reset_time=time.time()
 
         def timer(time_frame):
@@ -63,7 +67,7 @@ class Transformer:
                 return True
             return False
         
-        def generate_metrics():
+        def update_metrics():
             Open=0
             High=float('-inf')
             Low=float('inf')
@@ -75,7 +79,7 @@ class Transformer:
             record={}
             series=[]
 
-            for item in self.sse_source:
+            while True:
                 received_record=json.loads(item.data)
 
                 Id=received_record['round_id']
@@ -101,16 +105,14 @@ class Transformer:
                     series.append(record)
                     print(f'{colors.cyan}reset has occured!')
 
-                print(f'{colors.brown}round_id:{Id} | time:{std_time} | open:{Open} | high:{High} | low:{Low} | close:{Close} | multiplier:{multiplier}')
+                print(f'{colors.grey}round_id:{Id} | time:{std_time} | open:{Open} | high:{High} | low:{Low} | close:{Close} | multiplier:{multiplier}')
                 time.sleep(1)
 
             return record,series
         
         threading.Thread(target=generate_metrics,daemon=True).start()
 
-start_program_at_0sec()
-transformer=Transformer(f'http://{LOCAL_IP}:{PROCESSOR_PORT}/mozzart_aviator/stream')
-transformer.connect()
-transformer.quantifier(5,'minute_10')
-
+# start_program_at_0sec()
+mozzart_transformer=Transformer()
+mozzart_transformer.connect(f'http://{LOCAL_IP}:{PRODUCER_PORT}/simulation/stream')
 main_thread()
