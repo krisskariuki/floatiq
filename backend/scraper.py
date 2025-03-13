@@ -142,7 +142,7 @@ class Scraper:
                         except:
                             self.clients.remove(client)
 
-                    print(f'{colors.brown}round_id: {self.round_id} | std_time: {std_time} | multiplier: {multiplier}')
+                    print(f'{colors.grey}round_id: {self.round_id} | std_time: {std_time} | multiplier: {multiplier}')
         def run_aviator():
             try:
                 payouts_block=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))
@@ -225,7 +225,7 @@ class Scraper:
                 return
 
             except:
-                print(f'{colors.brown}[{self.retries}]\n{colors.cyan}restarting...')
+                print(f'{colors.grey}[{self.retries}]\n{colors.cyan}restarting...')
                 self.retries-=1
                 self.restart_driver()
         
