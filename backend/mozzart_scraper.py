@@ -6,8 +6,8 @@ import os
 import argparse
 
 load_dotenv()
-PHONE=os.getenv('PHONE')
-PASSWORD=os.getenv('PASSWORD')
+MOZZART_PHONE=os.getenv('MOZZART_PHONE')
+MOZZART_PASSWORD=os.getenv('MOZZART_PASSWORD')
 
 parser=argparse.ArgumentParser(description='for controlling the bots configuration parameters')
 parser.add_argument('--headless',action='store_true')
@@ -19,8 +19,8 @@ scraper.folder_name='backup'
 scraper.base_file_name='mozzart_aviator'
 
 scraper.action(action='click',attribute='class="login-link mozzart_ke"',message='logging in...')
-scraper.action(action='write',attribute='placeholder="Mobile number"',message='writing phone input...',input_value=PHONE)
-scraper.action(action='send',attribute='placeholder="Password"',message='writing password input...',input_value=PASSWORD)
+scraper.action(action='write',attribute='placeholder="Mobile number"',message='writing phone input...',input_value=MOZZART_PHONE)
+scraper.action(action='send',attribute='placeholder="Password"',message='writing password input...',input_value=MOZZART_PASSWORD)
 scraper.action(action='click',attribute='alt="Aviator"',message='connecting to game engine...',sleep_time=3)
 scraper.action(action='callback',callback=scraper.watch_aviator)
 
