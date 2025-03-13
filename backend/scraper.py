@@ -1,38 +1,21 @@
 from selenium_imports import *
 from datetime import datetime
-from colorama import Fore,init
 import pandas as pd
 from flask import Flask,Response,jsonify
 from flask_cors import CORS
 from queue import Queue
 from waitress import serve
+from config import PRODUCER_PORT
+from utils import colors
 import time
 import sys
 import os
 import json
 import threading
 
-init(autoreset=True)
-w=Fore.WHITE
-r=Fore.RED
-g=Fore.GREEN
-y=Fore.YELLOW
-c=Fore.CYAN
-m=Fore.MAGENTA
-b=Fore.LIGHTBLACK_EX
-
-
 app=Flask(__name__)
 CORS(app)
 
-def main_thread():
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print(f'{y}exiting program ...')
-        sys.exit(1)
-        
 class Scraper:
     def __init__(self,target_url:str,headless:bool=False,wait_time:int=10,retries:int=5)->None:
 
@@ -89,7 +72,7 @@ class Scraper:
 
             if not os.path.exists(self.file_name):
                 pd.DataFrame(columns=['self.round_id', 'multiplier', 'std_time', 'unix_time']).to_csv(self.file_name,index=False)
-                print(f'{g}backup file initialized: {self.file_name}')
+                print(f'{colors.green}backup file initialized: {self.file_name}')
 
     def save_record(self):
         with self.record_lock:
@@ -128,7 +111,7 @@ class Scraper:
             return Response(event_stream(),mimetype='text/event-stream')
 
         def start_server():
-            serve(app,host='0.0.0.0',port=8080,channel_timeout=300,threads=50,backlog=1000,connection_limit=500)
+            serve(app,host='0.0.0.0',port=PRODUCER_PORT,channel_timeout=300,threads=50,backlog=1000,connection_limit=500)
         
         threading.Thread(target=start_server,daemon=True).start()
         
@@ -159,12 +142,12 @@ class Scraper:
                         except:
                             self.clients.remove(client)
 
-                    print(f'{b}round_id: {self.round_id} | std_time: {std_time} | multiplier: {multiplier}')
+                    print(f'{colors.brown}round_id: {self.round_id} | std_time: {std_time} | multiplier: {multiplier}')
         def run_aviator():
             try:
                 payouts_block=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))
                 if payouts_block:
-                    print(f'{g}connected to game engine successfully')
+                    print(f'{colors.green}connected to game engine successfully')
                     self.manage_backup()
 
                 while True:
@@ -175,7 +158,7 @@ class Scraper:
                     except:
                         raise
             except Exception as e:
-                print(f'{r}game engine error!\n{y}{e}')
+                print(f'{colors.red}game engine error!\n{colors.yellow}{e}')
                 self.navigate()
             
         threading.Thread(target=run_aviator,daemon=True).start()
@@ -184,10 +167,10 @@ class Scraper:
         def locate():
             element=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,f'//*[@{action["attribute"]}]')))
             if element:
-                print(f'{g}element located')
+                print(f'{colors.green}element located')
                 return True
             else:
-                print(f'{r}element not located')
+                print(f'{colors.red}element not located')
                 return False
             
         def click():
@@ -211,7 +194,7 @@ class Scraper:
         def execute(function):
             time.sleep(action['sleep_time'])
             if action['message']:
-                print(f'{c}{action["message"]}')
+                print(f'{colors.cyan}{action["message"]}')
                 
             function()
 
@@ -229,22 +212,22 @@ class Scraper:
         while self.retries>0:
             try:
                 self.driver.get(self.target_url)
-                print(f'{c}navigating to {self.target_url}...')
+                print(f'{colors.cyan}navigating to {self.target_url}...')
                 for action in self.actions_array:
                     try:
                         self.parse_action(action)
 
                     except Exception as e:
-                        print(f'{y}navigation procedure error!\n{y}{e}\n')
+                        print(f'{colors.yellow}navigation procedure error!\n{colors.yellow}{e}\n')
                         raise
 
-                print(f'{g}navigation procedure successful')
+                print(f'{colors.green}navigation procedure successful')
                 return
 
             except:
-                print(f'{b}[{self.retries}]\n{c}restarting...')
+                print(f'{colors.brown}[{self.retries}]\n{colors.cyan}restarting...')
                 self.retries-=1
                 self.restart_driver()
         
-        print(f'{r}max retries reached')
+        print(f'{colors.red}max retries reached')
         sys.exit(1)
