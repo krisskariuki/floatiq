@@ -1,5 +1,7 @@
-from scraper import Scraper,main_thread
+from scraper import Scraper
 from dotenv import load_dotenv
+from config import MOZZART_URL
+from utils import main_thread
 import os
 import argparse
 
@@ -11,7 +13,7 @@ parser=argparse.ArgumentParser(description='for controlling the bots configurati
 parser.add_argument('--headless',action='store_true')
 parser_arguments=parser.parse_args()
 
-scraper=Scraper(target_url='https://www.mozzartbet.co.ke/en#/casino',wait_time=30,headless=parser_arguments.headless)
+scraper=Scraper(target_url=MOZZART_URL,wait_time=30,headless=parser_arguments.headless)
 
 scraper.folder_name='backup'
 scraper.base_file_name='mozzart_aviator'
