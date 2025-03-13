@@ -1,19 +1,16 @@
-from scraper import main_thread,w,c,r,g,b,y
 from sseclient import SSEClient
 from datetime import datetime
-from colorama import init
+from utils import colors,main_thread
+from config import LOCAL_IP
 import json
 import time
 import threading
 import sys
-import socket
-
-ip_address=socket.gethostbyname(socket.gethostname())
 
 def start_program_at_0sec():
     while datetime.now().second!=0:
         remaining=60-datetime.now().second
-        print(f"Starting in: {c}{remaining}{w} seconds",end="\r")
+        print(f"Starting in: {colors.cyan}{remaining}{colors.white} seconds",end="\r")
         time.sleep(0.5)
 
 init(autoreset=True)
@@ -26,9 +23,9 @@ class Transformer:
     def connect(self):
         try:
             self.sse_source=SSEClient(self.source_url)
-            print(f'\n\n{g}connected to: {c}{self.source_url}\n')
+            print(f'\n\n{colors.green}connected to: {colors.cyan}{self.source_url}\n')
         except :
-            print(f'\n\n{r}connection error!\n{y}failed to connect to: {c}{self.source_url}\n')
+            print(f'\n\n{colors.red}connection error!\n{colors.yellow}failed to connect to: {colors.cyan}{self.source_url}\n')
             sys.exit(1)
 
     
@@ -102,9 +99,9 @@ class Transformer:
                     Low=float('inf')
                     
                     series.append(record)
-                    print(f'{c}reset has occured!')
+                    print(f'{colors.cyan}reset has occured!')
 
-                print(f'{b}round_id:{Id} | time:{std_time} | open:{Open} | high:{High} | low:{Low} | close:{Close} | multiplier:{multiplier}')
+                print(f'{colors.brown}round_id:{Id} | time:{std_time} | open:{Open} | high:{High} | low:{Low} | close:{Close} | multiplier:{multiplier}')
                 time.sleep(1)
 
             return record,series
@@ -112,7 +109,7 @@ class Transformer:
         threading.Thread(target=generate_metrics,daemon=True).start()
 
 start_program_at_0sec()
-transformer=Transformer(f'http://{ip_address}:8080/mozzart_aviator/stream')
+transformer=Transformer(f'http://{LOCAL_IP}:{PROCESSOR_PORT}/mozzart_aviator/stream')
 transformer.connect()
 transformer.quantifier(5,'minute_10')
 
