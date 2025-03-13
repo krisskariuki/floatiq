@@ -76,7 +76,7 @@ class Simulator:
             std_time=datetime.now().isoformat(sep=' ',timespec='seconds') if self.run_live else recv_record[2]
             unix_time=int(datetime.now().timestamp()) if self.run_live else recv_record[3]
 
-            sleep_time=25*multiplier**0.2
+            sleep_time=20*multiplier**0.2
 
             for client in list(self.clients):
                 try:
