@@ -79,7 +79,7 @@ class Scraper:
             if self.record and isinstance(self.record,dict):
                 pd.DataFrame([self.record]).to_csv(self.file_name,mode='a',index=False,header=False)
 
-    def action(self,action='locate',attribute='',sleep_time=0,message='',input_value='',callback=None,args=[]):
+    def action(self,action='locate',attribute='',sleep_time=0,message='',input_value='',callback=None,choice_index=0,args=[]):
         action={key:value for key,value in locals().items() if key!="self"}
         self.actions_array.append(action)
     
@@ -184,6 +184,10 @@ class Scraper:
         def send():
             element=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,f'//*[@{action["attribute"]}]')))
             element.send_keys(action['input_value']+Keys.RETURN)
+        
+        def click_from_list():
+            element=WebDriverWait(self.driver,self.wait_time).until(EC.visibility_of_all_elements_located((By.XPATH,f'//*[@{action["attribute"]}]')))[action['choice_index']]
+            element.click()
 
         def callback():
             if callable(action['callback']):
@@ -201,6 +205,7 @@ class Scraper:
         action_table={
             'locate':locate,
             'click':click,
+            'click_from_list':click_from_list,
             'write':write,
             'send':send,
             'callback':callback
