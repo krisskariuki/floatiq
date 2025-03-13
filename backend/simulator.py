@@ -90,7 +90,7 @@ class Simulator:
                 self.record={'round_id':round_id,'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
                 self.series.append(self.record)
             
-            print(f'{colors.brown}round_id:{round_id} | std_time:{std_time} | multiplier:{multiplier}')
+            print(f'{colors.grey}round_id:{round_id} | std_time:{std_time} | multiplier:{multiplier}')
 
             i+=1
             if i>=len(self.source):
