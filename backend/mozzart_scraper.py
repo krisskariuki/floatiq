@@ -1,13 +1,9 @@
 from scraper import Scraper
-from dotenv import load_dotenv
 from config import MOZZART_URL
 from utils import main_thread
+from credentials import MOZZART_PHONE,MOZZART_PASSWORD
 import os
 import argparse
-
-load_dotenv()
-MOZZART_PHONE=os.getenv('MOZZART_PHONE')
-MOZZART_PASSWORD=os.getenv('MOZZART_PASSWORD')
 
 parser=argparse.ArgumentParser(description='for controlling the bots configuration parameters')
 parser.add_argument('--headless',action='store_true')
