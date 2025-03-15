@@ -22,11 +22,11 @@ class Transformer:
             'std_time':datetime.now().isoformat(sep=' ',timespec='seconds'),
             'unix_time':datetime.now().timestamp()
         }
-        self.data_store={}
+        self.record={}
 
         for timeframe in TIME_FRAMES:
             for target in TARGET_MULTIPLIERS:
-                self.data_store[f'{timeframe}:{target}']=(
+                self.record[f'{timeframe}:{target}']=(
                     {
                     'cycle_time':int(datetime.now().timestamp()),
                     'std_time':datetime.now().isoformat(sep=' ',timespec='seconds'),
@@ -58,9 +58,9 @@ class Transformer:
             timeframe=request.args.get('timeframe',type=str)
 
             key=f'{timeframe}:{target}'
-            data=self.data_store[key]
+            data=self.record[key]
 
-            return json.dumps({'timeframe':timeframe,'target':target,'history':data},indent=True)
+            return json.dumps(data,indent=True)
         
         def run_app():
             print(f'\n{colors.green}Started transformer\n{colors.white}server is running on {colors.cyan}http://{LOCAL_IP}:{PROCESSOR_PORT}\n')
@@ -91,13 +91,13 @@ class Transformer:
             key=f'{time_frame}:{target}'
             target=float(target)
 
-            Std_time=self.data_store[key]['std_time']
-            Unix_time=self.data_store[key]['unix_time']
-            Cycle_time=self.data_store[key]['cycle_time']
-            Open=self.data_store[key]['open']
-            High=self.data_store[key]['high']
-            Low=self.data_store[key]['low']
-            Close=self.data_store[key]['close']
+            Std_time=self.record[key]['std_time']
+            Unix_time=self.record[key]['unix_time']
+            Cycle_time=self.record[key]['cycle_time']
+            Open=self.record[key]['open']
+            High=self.record[key]['high']
+            Low=self.record[key]['low']
+            Close=self.record[key]['close']
 
             if record['multiplier'] > target:
                 Close +=target-1
@@ -115,7 +115,7 @@ class Transformer:
                 High=Close
                 Low=Close
 
-            self.data_store[key]={
+            self.record[key]={
                 'cycle_time':Cycle_time,'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'close':Close
             }
 
