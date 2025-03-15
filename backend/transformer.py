@@ -10,7 +10,6 @@ import json
 import sys
 import time
 import threading
-import random
 
 app=Flask(__name__)
 CORS(app)
