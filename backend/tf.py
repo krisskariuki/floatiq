@@ -5,6 +5,7 @@ from datetime import datetime
 from flask import Flask,Response,request
 from flask_cors import CORS
 from waitress import serve
+from queue import Queue
 import json
 import sys
 import time
@@ -55,6 +56,7 @@ class Transformer:
         threading.Thread(target=run_connect,daemon=True).start()
     
     def broadcast(self):
+                
         @app.route('/market/latest')
         def get_latest():
             target=request.args.get('target',type=str)
@@ -62,9 +64,9 @@ class Transformer:
 
             key=f'{timeframe}:{target}'
             with self.lock:
-                data=self.record_table[key]
+                record=self.record_table[key]
 
-            return Response(json.dumps(data,indent=True),mimetype='application/json')
+            return Response(json.dumps(record,indent=True),mimetype='application/json')
         
         
         @app.route('/market/history')
@@ -74,9 +76,32 @@ class Transformer:
 
             key=f'{timeframe}:{target}'
             with self.lock:
-                data=self.series_table[key]
+                series=self.series_table[key]
             
-            return Response(json.dumps(data,indent=True),mimetype='application/json')
+            return Response(json.dumps(series,indent=True),mimetype='application/json')
+        
+        @app.route('/market/stream')
+        def stream_data():
+            target=request.args.get('target',type=str)
+            timeframe=request.args.get('timeframe',type=str)
+
+            key=f'{timeframe}:{target}'
+            with self.lock:
+                record=self.record_table[key]
+
+                def event_stream():
+                    nonlocal record
+                    queue=Queue()
+                    self.clients.add(queue)
+
+                    if record:
+                        yield f"record:{json.dumps(record,separators=(',',':'))}\n\n"
+
+                    while True:
+                        record=queue.get()
+                        yield f"data:{json.dumps(record,separators=(',',':'))}\n\n"
+                        time.sleep(1)
+                return Response(event_stream(),mimetype='text/event-stream')
 
         def run_app():
             print(f'\n{colors.green}Started transformer\n{colors.white}server is running on {colors.cyan}http://{LOCAL_IP}:{PROCESSOR_PORT}\n')
@@ -134,6 +159,13 @@ class Transformer:
                 record={
                 'cycle_time':Cycle_time,'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'close':Close
                 }
+
+                for client in list(self.clients):
+                    try:
+                        client.put(record)
+                    except:
+                        self.clients.remove(client)
+
                 self.record_table[key]=record
                 self.series_table[key].append(record.copy())
 
