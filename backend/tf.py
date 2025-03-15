@@ -2,7 +2,7 @@ from config import TARGET_MULTIPLIERS,TIME_FRAMES,LOCAL_IP,PRODUCER_PORT,PROCESS
 from sseclient import SSEClient
 from utils import colors,main_thread
 from datetime import datetime
-from flask import Flask,jsonify,Response,request
+from flask import Flask,Response,request
 from flask_cors import CORS
 from waitress import serve
 import json
@@ -55,8 +55,8 @@ class Transformer:
         threading.Thread(target=run_connect,daemon=True).start()
     
     def broadcast(self):
-        @app.route('/market/history')
-        def get_history():
+        @app.route('/market/latest')
+        def get_latest():
             target=request.args.get('target',type=str)
             timeframe=request.args.get('timeframe',type=str)
 
@@ -64,8 +64,20 @@ class Transformer:
             with self.lock:
                 data=self.record_table[key]
 
-            return json.dumps(data,indent=True)
+            return Response(json.dumps(data,indent=True),mimetype='application/json')
         
+        
+        @app.route('/market/history')
+        def get_history():
+            target=request.args.get('target',type=str)
+            timeframe=request.args.get('timeframe',type=str)
+
+            key=f'{timeframe}:{target}'
+            with self.lock:
+                data=self.series_table[key]
+            
+            return Response(json.dumps(data,indent=True),mimetype='application/json')
+
         def run_app():
             print(f'\n{colors.green}Started transformer\n{colors.white}server is running on {colors.cyan}http://{LOCAL_IP}:{PROCESSOR_PORT}\n')
             serve(app,host='0.0.0.0',port=PROCESSOR_PORT,channel_timeout=300,threads=50,connection_limit=500)
