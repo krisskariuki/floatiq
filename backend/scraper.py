@@ -44,7 +44,16 @@ class Scraper:
         width,height=800,1080
 
         headmode_args=['--ignore-certificate-errors','--disable-notifications']
-        headless_args=['--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--enable-unsafe-swiftshader',f'--window-size={width},{height}']+headmode_args
+        headless_args = [
+        "--headless=new",
+        "--disable-dev-shm-usage",
+        "--disable-background-networking",
+        "--disable-renderer-backgrounding",
+        "--disable-background-timer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-extensions",
+        "--disable-popup-blocking",
+        ] + headmode_args
         
         args=headless_args if self.headless else headmode_args
         
