@@ -16,33 +16,36 @@ CORS(app)
 
 class Transformer:
     def __init__(self):
+        
+        self.lock=threading.Lock()
+        self.clients=set()
+        
         self.recv_record={
-            'round_id':0,
-            'multiplier':round(random.uniform(-0.001,0.099),2),
+            'round_id':None,
+            'unix_time':int(datetime.now().timestamp()),
             'std_time':datetime.now().isoformat(sep=' ',timespec='seconds'),
-            'unix_time':datetime.now().timestamp()
+            'multiplier':1.00
         }
-        self.record={}
 
-        for timeframe in TIME_FRAMES:
-            for target in TARGET_MULTIPLIERS:
-                self.record[f'{timeframe}:{target}']=(
-                    {
-                    'cycle_time':int(datetime.now().timestamp()),
-                    'std_time':datetime.now().isoformat(sep=' ',timespec='seconds'),
-                    'unix_time':int(datetime.now().timestamp()),
-                    'open':0,
-                    'high':float('-inf'),
-                    'low':float('inf'),
-                    'close':0,
-                    })
+        self.record_table={f'{timeframe}:{target}':{
+            'std_time':datetime.now().isoformat(sep=' ',timespec='seconds'),
+            'unix_time':int(datetime.now().timestamp()),
+            'cycle_time':int(datetime.now().timestamp()),
+            'open':0,
+            'high':float('-inf'),
+            'low':float('inf'),
+            'close':0
+        } for timeframe in TIME_FRAMES for target in TARGET_MULTIPLIERS}
+
+        self.series_table={f'{timeframe}:{target}':[] for timeframe in TIME_FRAMES for target in TARGET_MULTIPLIERS}
 
     def connect(self,sse_url):
         def run_connect():
             try:
                 print(f'\n\n{colors.green}connected to: {colors.cyan}{sse_url}\n')
                 for item in SSEClient(sse_url):
-                    self.recv_record=json.loads(item.data)
+                    with self.lock:
+                        self.recv_record=json.loads(item.data)
 
 
             except:
@@ -58,7 +61,8 @@ class Transformer:
             timeframe=request.args.get('timeframe',type=str)
 
             key=f'{timeframe}:{target}'
-            data=self.record[key]
+            with self.lock:
+                data=self.record_table[key]
 
             return json.dumps(data,indent=True)
         
@@ -91,15 +95,14 @@ class Transformer:
             key=f'{time_frame}:{target}'
             target=float(target)
 
-            Std_time=self.record[key]['std_time']
-            Unix_time=self.record[key]['unix_time']
-            Cycle_time=self.record[key]['cycle_time']
-            Open=self.record[key]['open']
-            High=self.record[key]['high']
-            Low=self.record[key]['low']
-            Close=self.record[key]['close']
+            multiplier=record['multiplier']
 
-            if record['multiplier'] > target:
+            with self.lock:
+                entry=self.record_table.get(key)
+
+            Std_time,Unix_time,Cycle_time,Open,High,Low,Close=entry['std_time'],entry['unix_time'],entry['cycle_time'],entry['open'],entry['high'],entry['low'],entry['close']
+
+            if multiplier > target:
                 Close +=target-1
             else:
                 Close-=1
@@ -114,10 +117,13 @@ class Transformer:
                 Open=Close
                 High=Close
                 Low=Close
-
-            self.record[key]={
+            
+            with self.lock:
+                record={
                 'cycle_time':Cycle_time,'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'close':Close
-            }
+                }
+                self.record_table[key]=record
+                self.series_table[key].append(record.copy())
 
         def run_transformer():
             nonlocal local_record
