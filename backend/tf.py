@@ -92,7 +92,9 @@ class Transformer:
                 def event_stream():
                     nonlocal record
                     queue=Queue()
-                    self.clients.add(queue)
+
+                    with self.lock:
+                        self.clients.add((key,queue))
 
                     if record:
                         yield f"record:{json.dumps(record,separators=(',',':'))}\n\n"
@@ -100,7 +102,7 @@ class Transformer:
                     while True:
                         record=queue.get()
                         yield f"data:{json.dumps(record,separators=(',',':'))}\n\n"
-                        time.sleep(1)
+
                 return Response(event_stream(),mimetype='text/event-stream')
 
         def run_app():
@@ -155,16 +157,16 @@ class Transformer:
                 High=Close
                 Low=Close
             
+            record={
+            'cycle_time':Cycle_time,'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'close':Close
+            }
             with self.lock:
-                record={
-                'cycle_time':Cycle_time,'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'close':Close
-                }
-
-                for client in list(self.clients):
-                    try:
-                        client.put(record)
-                    except:
-                        self.clients.remove(client)
+                for client_key,client_queue in list(self.clients):
+                    if client_key==key:
+                        try:
+                            client_queue.put(record)
+                        except:
+                            self.clients.remove((client_key,client_queue))
 
                 self.record_table[key]=record
                 self.series_table[key].append(record.copy())
