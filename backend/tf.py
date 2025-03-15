@@ -1,28 +1,42 @@
-from config import TARGET_MULTIPLIERS,TIME_FRAMES,PRODUCER_PORT,LOCAL_IP
+from config import TARGET_MULTIPLIERS,TIME_FRAMES,LOCAL_IP,PRODUCER_PORT,PROCESSOR_PORT
 from sseclient import SSEClient
 from utils import colors,main_thread
 from datetime import datetime
+from flask import Flask,jsonify,Response,request
+from flask_cors import CORS
+from waitress import serve
 import json
 import sys
 import time
 import threading
+import random
+
+app=Flask(__name__)
+CORS(app)
 
 class Transformer:
     def __init__(self):
-        self.recv_record=None
+        self.recv_record={
+            'round_id':0,
+            'multiplier':round(random.uniform(-0.001,0.099),2),
+            'std_time':datetime.now().isoformat(sep=' ',timespec='seconds'),
+            'unix_time':datetime.now().timestamp()
+        }
         self.data_store={}
 
         for timeframe in TIME_FRAMES:
             for target in TARGET_MULTIPLIERS:
-                self.data_store[f'{timeframe}|{target}']=(
+                self.data_store[f'{timeframe}:{target}']=(
                     {
+                    'cycle_time':int(datetime.now().timestamp()),
+                    'std_time':datetime.now().isoformat(sep=' ',timespec='seconds'),
+                    'unix_time':int(datetime.now().timestamp()),
                     'open':0,
                     'high':float('-inf'),
                     'low':float('inf'),
                     'close':0,
-                    'cumsum':0
                     })
-    
+
     def connect(self,sse_url):
         def run_connect():
             try:
@@ -37,56 +51,84 @@ class Transformer:
         
         threading.Thread(target=run_connect,daemon=True).start()
     
+    def broadcast(self):
+        @app.route('/market/history')
+        def get_history():
+            target=request.args.get('target',type=str)
+            timeframe=request.args.get('timeframe',type=str)
+
+            key=f'{timeframe}:{target}'
+            data=self.data_store[key]
+
+            return json.dumps({'timeframe':timeframe,'target':target,'history':data},indent=True)
+        
+        def run_app():
+            print(f'\n{colors.green}Started transformer\n{colors.white}server is running on {colors.cyan}http://{LOCAL_IP}:{PROCESSOR_PORT}\n')
+            serve(app,host='0.0.0.0',port=PROCESSOR_PORT,channel_timeout=300,threads=50,connection_limit=500)
+
+        threading.Thread(target=run_app,daemon=True).start()
+
     def transform(self,target_multipliers=[],time_frames=[]):
         local_record=None
-        Open,High,Low,Close,Cumsum=0,float('-inf'),float('inf'),0,0
 
-        
-        def is_time_to_update(time_frame):
+        def is_time_to_update(last_reset_time,time_frame):
             now=datetime.now()
             time_unit,time_step=time_frame.split('_')
             time_step=int(time_step)
 
+            elapsed_time=time.time()-last_reset_time
+
             time_table={
-                'second':lambda:now.second % time_step==0,
-                'minute':lambda:now.minute % time_step==0 and now.second==0,
-                'hour':lambda:now.hour % time_step==0 and now.minute==0 and now.second==0,
-                'day':lambda:now.day % time_step==0 and now.hour==0 and now.minute==0 and now.second==0 
+                'second':time_step,
+                'minute':time_step*60,
+                'hour':time_step*3600,
+                'day':time_step*86400
             }
 
-            return time_table[time_unit]()
+            return elapsed_time >= time_table.get(time_unit,0)
 
         def update_metrics(record,target,time_frame):
-            nonlocal Open,High,Low,Close,Cumsum
+            key=f'{time_frame}:{target}'
+            target=float(target)
+
+            Std_time=self.data_store[key]['std_time']
+            Unix_time=self.data_store[key]['unix_time']
+            Cycle_time=self.data_store[key]['cycle_time']
+            Open=self.data_store[key]['open']
+            High=self.data_store[key]['high']
+            Low=self.data_store[key]['low']
+            Close=self.data_store[key]['close']
+
             if record['multiplier'] > target:
                 Close +=target-1
             else:
                 Close-=1
             
+            Std_time=datetime.now().isoformat(sep=' ',timespec='seconds')
+            Unix_time=int(datetime.now().timestamp())
             High=max(Open,High,Close)
             Low=min(Open,Low,Close)
-            Cumsum+=record['multiplier']
 
-            if is_time_to_update(time_frame):
+            if is_time_to_update(Cycle_time,time_frame):
+                Cycle_time=int(datetime.now().timestamp())
                 Open=Close
-                High=float('-inf')
-                Low=float('inf')
-                Cumsum=0
+                High=Close
+                Low=Close
 
-                print(f"{colors.cyan}reset has occurred")
-
-            print(f"std_time:{record['std_time']} | open:{Open} | High:{High} | low:{Low} | close:{Close} | cumsum:{round(Cumsum,2)} multiplier:{record['multiplier']}")
-
-            return Open,High,Low,Close,Cumsum
-        
+            self.data_store[key]={
+                'cycle_time':Cycle_time,'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'close':Close
+            }
 
         def run_transformer():
             nonlocal local_record
             while True:
-                if local_record!=self.recv_record:
+                if local_record is None or local_record['round_id']!=self.recv_record['round_id']:
                     local_record=self.recv_record
-                    update_metrics(self.recv_record,3,'minute_5')
                     
+                    for TIMEFRAME in TIME_FRAMES:
+                        for TARGET in TARGET_MULTIPLIERS:
+                            update_metrics(local_record,TARGET,TIMEFRAME)
+
                 time.sleep(1)
         
         threading.Thread(target=run_transformer,daemon=True).start()
@@ -94,5 +136,6 @@ class Transformer:
 tf=Transformer()
 tf.connect(f'http://{LOCAL_IP}:{PRODUCER_PORT}/simulation/stream')
 tf.transform()
+tf.broadcast()
 
 main_thread()
