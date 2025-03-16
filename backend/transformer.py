@@ -96,7 +96,7 @@ class Transformer:
                         self.clients.add((key,queue))
 
                     if record:
-                        yield f"record:{json.dumps(record,separators=(',',':'))}\n\n"
+                        yield f"data:{json.dumps(record,separators=(',',':'))}\n\n"
 
                     while True:
                         record=queue.get()
@@ -150,14 +150,19 @@ class Transformer:
             High=max(Open,High,Close)
             Low=min(Open,Low,Close)
 
+            
             if is_time_to_update(Cycle_time,time_frame):
+                self.series_table[key].append(
+                    {'std_time':Std_time,'unix_time':Unix_time,'cycle_time':Cycle_time,'open':Open,'high':High,'low':Low,'close':Close}
+                    )
+                
                 Cycle_time=int(datetime.now().timestamp())
                 Open=Close
                 High=Close
                 Low=Close
-            
+                
             record={
-            'cycle_time':Cycle_time,'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'close':Close
+            'std_time':Std_time,'unix_time':Unix_time,'cycle_time':Cycle_time,'open':Open,'high':High,'low':Low,'close':Close
             }
             with self.lock:
                 for client_key,client_queue in list(self.clients):
@@ -168,7 +173,6 @@ class Transformer:
                             self.clients.remove((client_key,client_queue))
 
                 self.record_table[key]=record
-                self.series_table[key].append(record.copy())
 
         def run_transformer():
             nonlocal local_record
