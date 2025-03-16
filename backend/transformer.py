@@ -110,7 +110,7 @@ class Transformer:
 
         threading.Thread(target=run_app,daemon=True).start()
 
-    def transform(self,target_multipliers=[],time_frames=[]):
+    def transform(self,time_frames,target_multipliers):
         local_record=None
 
         def is_time_to_update(last_reset_time,time_frame):
@@ -176,9 +176,9 @@ class Transformer:
                 if local_record is None or local_record['round_id']!=self.recv_record['round_id']:
                     local_record=self.recv_record
                     
-                    for TIMEFRAME in TIME_FRAMES:
-                        for TARGET in TARGET_MULTIPLIERS:
-                            update_metrics(local_record,TARGET,TIMEFRAME)
+                    for timeframe in time_frames:
+                        for target in target_multipliers:
+                            update_metrics(local_record,target,timeframe)
 
                 time.sleep(1)
         
@@ -186,7 +186,7 @@ class Transformer:
 
 tf=Transformer()
 tf.connect(f'http://{LOCAL_IP}:{PRODUCER_PORT}/{PRODUCER_STREAM}')
-tf.transform()
+tf.transform(TIME_FRAMES,TARGET_MULTIPLIERS)
 tf.broadcast()
 
 main_thread()
