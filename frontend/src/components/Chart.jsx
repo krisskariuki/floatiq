@@ -1,43 +1,22 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { createChart } from "lightweight-charts";
 
-const ChartComponent = () => {
+const Chart = () => {
   const chartContainerRef = useRef(null);
-  const chartInstanceRef = useRef(null);
-  const recordSourceRef = useRef(null); // Ref for EventSource to clean it up
-
-  const token="RUBY"
-  const timeFrame="minute15"
-
-  const fetchSeries = async () => {
-    try {
-      const response = await fetch(`http://localhost:8000/data/series/${timeFrame}/${token}`);
-      const result = await response.json();
-      return result; // Return the data to use it in the chart
-    } catch (error) {
-      console.error("Failed to fetch initial data:", error);
-      return [];
-    }
-  };
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
-    // Create chart instance
     const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.offsetWidth,
-      height: chartContainerRef.current.offsetHeight,
+      width: chartContainerRef.current.clientWidth || 600,
+      height: 400,
       layout: {
-        backgroundColor: "#FFFFFF",
-        textColor: "#444",
+        backgroundColor: "#fff",
+        textColor: "#000",
       },
       grid: {
-        vertLines: {
-          color: "#e1e1e1",
-        },
-        horzLines: {
-          color: "#e1e1e1",
-        },
+        vertLines: { color: "#e1e1e1" },
+        horzLines: { color: "#e1e1e1" },
       },
       timeScale: {
         timeVisible: true,
@@ -45,43 +24,33 @@ const ChartComponent = () => {
       },
     });
 
-    // Add candlestick series
     const candlestickSeries = chart.addCandlestickSeries();
 
-    // Fetch initial data
-    fetchSeries().then((data) => {
-      candlestickSeries.setData(data);
-    });
+    // Sample candlestick data
+    const sampleData = [
+      { time: "2023-03-01", open: 100, high: 110, low: 90, close: 105 },
+      { time: "2023-03-02", open: 105, high: 115, low: 95, close: 100 },
+      { time: "2023-03-03", open: 100, high: 120, low: 80, close: 110 },
+      { time: "2023-03-04", open: 110, high: 130, low: 100, close: 125 },
+    ];
 
-    // Set up EventSource for real-time updates
-    const recordSource = new EventSource(`http://localhost:8000/data/stream/${timeFrame}/${token}`);
-    recordSource.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      candlestickSeries.update(data);
-    };
-
-    // Save references for cleanup
-    chartInstanceRef.current = chart;
-    recordSourceRef.current = recordSource;
+    candlestickSeries.setData(sampleData);
 
     // Resize chart on window resize
     const handleResize = () => {
       chart.applyOptions({
-        width: chartContainerRef.current.offsetWidth,
-        height: chartContainerRef.current.offsetHeight,
+        width: chartContainerRef.current.clientWidth,
       });
     };
     window.addEventListener("resize", handleResize);
 
     return () => {
-      // Cleanup on component unmount
       chart.remove();
-      recordSource.close();
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
-  return <div className="center-self-h chart" ref={chartContainerRef} />;
+  return <div ref={chartContainerRef} style={{ width: "100%", height: "400px" }} />;
 };
 
-export default ChartComponent;
+export default Chart;
