@@ -1,4 +1,4 @@
-from config import TARGET_MULTIPLIERS,TIME_FRAMES,LOCAL_IP,PRODUCER_PORT,PROCESSOR_PORT
+from config import TARGET_MULTIPLIERS,TIME_FRAMES,LOCAL_IP,PRODUCER_PORT,PROCESSOR_PORT,PRODUCER_STREAM
 from sseclient import SSEClient
 from utils import colors,main_thread
 from datetime import datetime
@@ -185,7 +185,7 @@ class Transformer:
         threading.Thread(target=run_transformer,daemon=True).start()
 
 tf=Transformer()
-tf.connect(f'http://{LOCAL_IP}:{PRODUCER_PORT}/simulation/stream')
+tf.connect(f'http://{LOCAL_IP}:{PRODUCER_PORT}/{PRODUCER_STREAM}')
 tf.transform()
 tf.broadcast()
 
