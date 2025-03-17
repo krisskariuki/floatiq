@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightweight Chart - Candlestick</title>
+    <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        body {
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+        }
+        #chart {
+            width: 1200px;
+            height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div id="target_multipliers">
+        <span>2.00</span>
+        <span>3.00</span>
+        <span>5.00</span>
+        <span>10.00</span>
+    </div>
+    <div id="time_frames">
+        <span>minute_5</span>
+        <span>minute_10</span>
+        <span>minute_30</span>
+        <span>hour_1</span>
+        <!-- <span>hour_4</span> -->
+        <!-- <span>hour_6</span> -->
+    </div>
+    <div id="chart"></div>
+    <script>
+
+        const timeframe='hour_1'
+        const target='10.00'
+
+        const chart = LightweightCharts.createChart(document.getElementById('chart'), {
+            layout: {
+                background: { type: 'solid', color: '#ffffff' },
+                textColor: '#000',
+            },
+            grid: {
+                vertLines: { color: '#eee' },
+                horzLines: { color: '#eee' }
+            },
+            timeScale: {
+                timeVisible: true,
+                secondsVisible: false
+            }
+        });
+
+        function updateChartSize() {
+    const chartContainer = document.getElementById('chart');
+    chart.applyOptions({
+        width: chartContainer.clientWidth,
+        height: chartContainer.clientHeight,
+    });
+}
+
+// Run initially to set the correct size
+updateChartSize();
+
+// Listen for window resize events and update the chart
+window.addEventListener('resize', updateChartSize);
+
+chart.applyOptions({
+    timeScale: {
+        barSpacing: 15, // Increase to make candlesticks wider, decrease for narrower bars
+        minBarSpacing: 15, // Ensure bars don’t get too small
+    }
+});
+
+
+        const candleSeries = chart.addCandlestickSeries();
+        let lastCandle = null;
+        let lastUpdateTime = Date.now();
+
+        function fetchInitialData(url) {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const formattedData = data.map(item => ({
+                        time: item.unix_time,
+                        open: item.open,
+                        high: item.high,
+                        low: item.low,
+                        close: item.close,
+                    }));
+                    candleSeries.setData(formattedData);
+                    lastCandle = formattedData[formattedData.length - 1];
+                })
+                .catch(error => console.error("Error fetching initial data:", error));
+        }
+
+        function subscribeToUpdates(url) {
+            const eventSource = new EventSource(url);
+            eventSource.onmessage = event => {
+                const item = JSON.parse(event.data);
+                lastCandle = {
+                    time: item.cycle_time,
+                    open: item.open,
+                    high: item.high,
+                    low: item.low,
+                    close: item.close,
+                };
+                candleSeries.update(lastCandle);
+                lastUpdateTime = Date.now();
+            };
+            eventSource.onerror = error => {
+                console.error("SSE error:", error);
+                eventSource.close();
+            };
+        }
+
+        function applyRandomFluctuations() {
+            if (lastCandle && Date.now() - lastUpdateTime > 1000) { // If no update for 2+ seconds
+                const fluctuation = (Math.random() - 0.5) * 0.1 * lastCandle.close; // ±5% variation
+                lastCandle.close = Math.max(lastCandle.low, Math.min(lastCandle.high, lastCandle.close + fluctuation));
+                candleSeries.update(lastCandle);
+            }
+        }
+
+        fetchInitialData(`http://localhost:8000/market/history?timeframe=${timeframe}&target=${target}`);
+        subscribeToUpdates(`http://localhost:8000/market/stream?timeframe=${timeframe}&target=${target}`);
+        setInterval(applyRandomFluctuations, 1000); // Apply fluctuation every second
+    </script>
+</body>
+</html>
