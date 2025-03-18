@@ -34,7 +34,8 @@ class Transformer:
             'open':0,
             'high':float('-inf'),
             'low':float('inf'),
-            'close':0
+            'close':0,
+            'ema':0
         } for timeframe in TIME_FRAMES for target in TARGET_MULTIPLIERS}
 
         self.series_table={f'{timeframe}:{target}':[] for timeframe in TIME_FRAMES for target in TARGET_MULTIPLIERS}
@@ -128,6 +129,15 @@ class Transformer:
             }
 
             return elapsed_time >= time_table.get(time_unit,0)
+        
+        def estimate_periods(time_frame):
+            time_unit,time_step=time_frame.split('_')
+            time_step=int(time_step)
+
+            rounds_per_minute=3
+            time_multipliers={'minute':2,'hour':135,'day':3300}
+
+            return rounds_per_minute*time_step*time_multipliers.get(time_unit)
 
         def update_metrics(record,target,time_frame):
             key=f'{time_frame}:{target}'
@@ -138,22 +148,23 @@ class Transformer:
             with self.lock:
                 entry=self.record_table.get(key)
 
-            Std_time,Unix_time,Cycle_time,Open,High,Low,Close=entry['std_time'],entry['unix_time'],entry['cycle_time'],entry['open'],entry['high'],entry['low'],entry['close']
+            Std_time,Unix_time,Cycle_time,Open,High,Low,Close,previous_ema=entry['std_time'],entry['unix_time'],entry['cycle_time'],entry['open'],entry['high'],entry['low'],entry['close'],entry['ema']
 
-            if multiplier > target:
-                Close +=target-1
-            else:
-                Close-=1
-            
+            period=estimate_periods(time_frame)
+            alpha=2/(period+1)
+
+            Ema=alpha*Close+(1-alpha)*previous_ema
+
             Std_time=datetime.now().isoformat(sep=' ',timespec='seconds')
             Unix_time=int(datetime.now().timestamp())
+            Close+=(target-1) if multiplier>target else -1
             High=max(Open,High,Close)
             Low=min(Open,Low,Close)
 
             
             if is_time_to_update(Cycle_time,time_frame):
                 self.series_table[key].append(
-                    {'std_time':Std_time,'unix_time':Unix_time,'cycle_time':Cycle_time,'open':Open,'high':High,'low':Low,'close':Close}
+                    {'std_time':Std_time,'unix_time':Unix_time,'cycle_time':Cycle_time,'open':Open,'high':High,'low':Low,'close':Close,'ema':Ema}
                     )
                 
                 Cycle_time=int(datetime.now().timestamp())
@@ -163,7 +174,7 @@ class Transformer:
                 
             record={
             'std_time':Std_time,'unix_time':Unix_time,'cycle_time':Cycle_time,'open':Open,'high':High,'low':Low,'close':Close
-            }
+            ,'ema':Ema}
             with self.lock:
                 for client_key,client_queue in list(self.clients):
                     if client_key==key:
