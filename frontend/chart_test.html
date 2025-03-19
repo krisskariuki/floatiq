@@ -41,16 +41,24 @@
         });
 
         const candleSeries = chart.addCandlestickSeries();
-        const ema50Series = chart.addLineSeries({ color: '#cbacba', lineWidth: 1.5 });
         const ema20Series = chart.addLineSeries({ color: '#3a9bfd', lineWidth: 1.5 });
+        const ema200Series = chart.addLineSeries({ color: '#cbacba', lineWidth: 1.5 });
 
         let lastCandle = null;
-        let lastEma50Point = null;
         let lastEma20Point = null;
+        let lastEma200Point = null;
         let lastUpdateTime = Date.now();
 
-        let currentSignal = null; // Track last signal (BUY or SELL)
-        let markers = []; // Store markers
+        let currentSignal = null;
+        let markers = []; 
+
+        // Define signal colors
+        const signalColors = {
+            'BUY': '#115599',       // Light green (duller)
+            'SELL': '#eeaa66',      // Light red (duller)
+            'STRONG BUY': 'green', // Bright green
+            'STRONG SELL': 'red' // Bright red
+        };
 
         function fetchInitialData(url) {
             fetch(url)
@@ -64,23 +72,54 @@
                         close: item.close,
                     }));
 
-                    const formattedEma50 = data.map(item => ({
+                    const formattedEma20 = data.map(item => ({
                         time: item.unix_time,
                         value: item.ema_20,
                     }));
 
-                    const formattedEma20 = data.map(item => ({
+                    const formattedEma200 = data.map(item => ({
                         time: item.unix_time,
                         value: item.ema_200,
                     }));
 
+                    // Process historical signals
+                    let prevSignal = null;
+                    data.forEach((item, index) => {
+                        if (item.signal) {
+                            const signal = item.signal.toUpperCase();
+                            
+                            // Only add a marker if this signal is different from the previous one
+                            if (signal !== prevSignal) {
+                                prevSignal = signal;
+                                
+                                const markerConfig = {
+                                    time: item.unix_time,
+                                    position: signal.includes("BUY") ? "belowBar" : "aboveBar",
+                                    color: signalColors[signal] || (signal.includes("BUY") ? signalColors['BUY'] : signalColors['SELL']),
+                                    shape: signal.includes("BUY") ? "arrowUp" : "arrowDown",
+                                    text: signal
+                                };
+                                markers.push(markerConfig);
+                            }
+                            
+                            // Update current signal to the most recent one
+                            if (index === data.length - 1) {
+                                currentSignal = signal;
+                            }
+                        }
+                    });
+
+                    // Set data for chart series
                     candleSeries.setData(formattedCandles);
-                    ema50Series.setData(formattedEma50);
                     ema20Series.setData(formattedEma20);
+                    ema200Series.setData(formattedEma200);
+                    
+                    // Set all historical markers
+                    candleSeries.setMarkers(markers);
 
                     lastCandle = formattedCandles[formattedCandles.length - 1];
-                    lastEma50Point = formattedEma50[formattedEma50.length - 1];
                     lastEma20Point = formattedEma20[formattedEma20.length - 1];
+                    lastEma200Point = formattedEma200[formattedEma200.length - 1];
                 })
                 .catch(error => console.error("Error fetching initial data:", error));
         }
@@ -98,52 +137,53 @@
                     close: item.close,
                 };
 
-                lastEma50Point = { time: item.unix_time, value: item.ema_20 };
-                lastEma20Point = { time: item.unix_time, value: item.ema_200 };
+                lastEma20Point = { time: item.unix_time, value: item.ema_20 };
+                lastEma200Point = { time: item.unix_time, value: item.ema_200 };
 
                 candleSeries.update(lastCandle);
-                ema50Series.update(lastEma50Point);
                 ema20Series.update(lastEma20Point);
+                ema200Series.update(lastEma200Point);
 
-                checkForSignal(item); // Check for buy/sell signals
+                if (item.signal) {
+                    checkForSignal(item);
+                }
 
                 lastUpdateTime = Date.now();
             };
             eventSource.onerror = error => {
                 console.error("SSE error:", error);
                 eventSource.close();
+                // Try to reconnect after a delay
+                setTimeout(() => subscribeToUpdates(url), 5000);
             };
         }
 
         function checkForSignal(item) {
-    if (!item.signal || item.signal === currentSignal) {
-        return; // No signal change, so do nothing
-    }
+            if (!item.signal) {
+                return; // Skip if there's no signal
+            }
 
-    currentSignal = item.signal; // Update last signal
-
-    // Define marker properties
-    let markerConfig = {
-        time: item.unix_time,
-        position: "belowBar",
-        color: "green",
-        shape: "arrowUp",
-        text: "buy" // Default to weak buy
-    };
-
-    if (currentSignal === "SELL") {
-        markerConfig = { ...markerConfig, position: "aboveBar", color: "red", shape: "arrowDown", text: "SELL" };
-    } else if (currentSignal === "sell") {
-        markerConfig = { ...markerConfig, position: "aboveBar", color: "#ffaaaa", text: "sell" }; // Light red for weak sell
-    } else if (currentSignal === "BUY") {
-        markerConfig = { ...markerConfig, color: "green", text: "BUY" }; // Bright green for strong buy
-    } else if (currentSignal === "buy") {
-        markerConfig = { ...markerConfig, color: "#66aa66", text: "buy" }; // Light green for weak buy
-    }
-
-    candleSeries.setMarkers([markerConfig]); // Show only the latest marker
-}
-
+            const signal = item.signal.toUpperCase();
+            
+            // Only add a new marker if the signal is different from the current one
+            if (signal !== currentSignal) {
+                currentSignal = signal;
+                
+                const markerConfig = {
+                    time: item.unix_time,
+                    position: signal.includes("BUY") ? "belowBar" : "aboveBar",
+                    color: signalColors[signal] || (signal.includes("BUY") ? signalColors['BUY'] : signalColors['SELL']),
+                    shape: signal.includes("BUY") ? "arrowUp" : "arrowDown",
+                    text: signal
+                };
+                
+                // Add the new marker to our collection
+                markers.push(markerConfig);
+                
+                // Update the chart with all markers
+                candleSeries.setMarkers(markers);
+            }
+        }
 
         function applyRandomFluctuations() {
             if (lastCandle && Date.now() - lastUpdateTime > 1000) { 
@@ -151,14 +191,14 @@
                 lastCandle.close = Math.max(lastCandle.low, Math.min(lastCandle.high, lastCandle.close + fluctuation));
                 candleSeries.update(lastCandle);
 
-                if (lastEma50Point) {
-                    lastEma50Point.value += (Math.random() - 0.5) * 0.02 * lastEma50Point.value;
-                    ema50Series.update(lastEma50Point);
-                }
-
                 if (lastEma20Point) {
                     lastEma20Point.value += (Math.random() - 0.5) * 0.02 * lastEma20Point.value;
                     ema20Series.update(lastEma20Point);
+                }
+
+                if (lastEma200Point) {
+                    lastEma200Point.value += (Math.random() - 0.5) * 0.02 * lastEma200Point.value;
+                    ema200Series.update(lastEma200Point);
                 }
             }
         }
