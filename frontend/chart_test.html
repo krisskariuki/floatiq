@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lightweight Chart - Candlestick</title>
+    <title>Lightweight Chart - Candlestick with EMA</title>
     <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         body {
-            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f4;
         }
         #chart {
@@ -17,80 +17,70 @@
     </style>
 </head>
 <body>
-    <div id="target_multipliers">
-        <span>2.00</span>
-        <span>3.00</span>
-        <span>5.00</span>
-        <span>10.00</span>
-    </div>
-    <div id="time_frames">
-        <span>minute_5</span>
-        <span>minute_10</span>
-        <span>minute_30</span>
-        <span>hour_1</span>
-        <!-- <span>hour_4</span> -->
-        <!-- <span>hour_6</span> -->
-    </div>
     <div id="chart"></div>
     <script>
-
-        const timeframe='hour_1'
-        const target='10.00'
+        const timeframe = 'minute_1';
+        const target = '20.00';
+        const port = '8200';
 
         const chart = LightweightCharts.createChart(document.getElementById('chart'), {
-            layout: {
-                background: { type: 'solid', color: '#ffffff' },
-                textColor: '#000',
-            },
-            grid: {
-                vertLines: { color: '#eee' },
-                horzLines: { color: '#eee' }
-            },
-            timeScale: {
-                timeVisible: true,
-                secondsVisible: false
-            }
+            layout: { background: { type: 'solid', color: '#ffffff' }, textColor: '#000' },
+            grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
+            timeScale: { timeVisible: true, secondsVisible: false }
         });
 
         function updateChartSize() {
-    const chartContainer = document.getElementById('chart');
-    chart.applyOptions({
-        width: chartContainer.clientWidth,
-        height: chartContainer.clientHeight,
-    });
-}
+            const chartContainer = document.getElementById('chart');
+            chart.applyOptions({ width: chartContainer.clientWidth, height: chartContainer.clientHeight });
+        }
+        updateChartSize();
+        window.addEventListener('resize', updateChartSize);
 
-// Run initially to set the correct size
-updateChartSize();
-
-// Listen for window resize events and update the chart
-window.addEventListener('resize', updateChartSize);
-
-chart.applyOptions({
-    timeScale: {
-        barSpacing: 15, // Increase to make candlesticks wider, decrease for narrower bars
-        minBarSpacing: 15, // Ensure bars don’t get too small
-    }
-});
-
+        chart.applyOptions({
+            timeScale: { barSpacing: 15, minBarSpacing: 15 }
+        });
 
         const candleSeries = chart.addCandlestickSeries();
+        const ema50Series = chart.addLineSeries({ color: '#cbacba', lineWidth: 1.5 });
+        const ema20Series = chart.addLineSeries({ color: '#3a9bfd', lineWidth: 1.5 });
+
         let lastCandle = null;
+        let lastEma50Point = null;
+        let lastEma20Point = null;
         let lastUpdateTime = Date.now();
+
+        let currentSignal = null; // Track last signal (BUY or SELL)
+        let markers = []; // Store markers
 
         function fetchInitialData(url) {
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    const formattedData = data.map(item => ({
+                    const formattedCandles = data.map(item => ({
                         time: item.unix_time,
                         open: item.open,
                         high: item.high,
                         low: item.low,
                         close: item.close,
                     }));
-                    candleSeries.setData(formattedData);
-                    lastCandle = formattedData[formattedData.length - 1];
+
+                    const formattedEma50 = data.map(item => ({
+                        time: item.unix_time,
+                        value: item.ema_20,
+                    }));
+
+                    const formattedEma20 = data.map(item => ({
+                        time: item.unix_time,
+                        value: item.ema_200,
+                    }));
+
+                    candleSeries.setData(formattedCandles);
+                    ema50Series.setData(formattedEma50);
+                    ema20Series.setData(formattedEma20);
+
+                    lastCandle = formattedCandles[formattedCandles.length - 1];
+                    lastEma50Point = formattedEma50[formattedEma50.length - 1];
+                    lastEma20Point = formattedEma20[formattedEma20.length - 1];
                 })
                 .catch(error => console.error("Error fetching initial data:", error));
         }
@@ -99,14 +89,24 @@ chart.applyOptions({
             const eventSource = new EventSource(url);
             eventSource.onmessage = event => {
                 const item = JSON.parse(event.data);
+
                 lastCandle = {
-                    time: item.cycle_time,
+                    time: item.unix_time,
                     open: item.open,
                     high: item.high,
                     low: item.low,
                     close: item.close,
                 };
+
+                lastEma50Point = { time: item.unix_time, value: item.ema_20 };
+                lastEma20Point = { time: item.unix_time, value: item.ema_200 };
+
                 candleSeries.update(lastCandle);
+                ema50Series.update(lastEma50Point);
+                ema20Series.update(lastEma20Point);
+
+                checkForSignal(item); // Check for buy/sell signals
+
                 lastUpdateTime = Date.now();
             };
             eventSource.onerror = error => {
@@ -115,17 +115,57 @@ chart.applyOptions({
             };
         }
 
+        function checkForSignal(item) {
+    if (!item.signal || item.signal === currentSignal) {
+        return; // No signal change, so do nothing
+    }
+
+    currentSignal = item.signal; // Update last signal
+
+    // Define marker properties
+    let markerConfig = {
+        time: item.unix_time,
+        position: "belowBar",
+        color: "green",
+        shape: "arrowUp",
+        text: "buy" // Default to weak buy
+    };
+
+    if (currentSignal === "SELL") {
+        markerConfig = { ...markerConfig, position: "aboveBar", color: "red", shape: "arrowDown", text: "SELL" };
+    } else if (currentSignal === "sell") {
+        markerConfig = { ...markerConfig, position: "aboveBar", color: "#ffaaaa", text: "sell" }; // Light red for weak sell
+    } else if (currentSignal === "BUY") {
+        markerConfig = { ...markerConfig, color: "green", text: "BUY" }; // Bright green for strong buy
+    } else if (currentSignal === "buy") {
+        markerConfig = { ...markerConfig, color: "#66aa66", text: "buy" }; // Light green for weak buy
+    }
+
+    candleSeries.setMarkers([markerConfig]); // Show only the latest marker
+}
+
+
         function applyRandomFluctuations() {
-            if (lastCandle && Date.now() - lastUpdateTime > 1000) { // If no update for 2+ seconds
-                const fluctuation = (Math.random() - 0.5) * 0.1 * lastCandle.close; // ±5% variation
+            if (lastCandle && Date.now() - lastUpdateTime > 1000) { 
+                const fluctuation = (Math.random() - 0.5) * 0.1 * lastCandle.close;
                 lastCandle.close = Math.max(lastCandle.low, Math.min(lastCandle.high, lastCandle.close + fluctuation));
                 candleSeries.update(lastCandle);
+
+                if (lastEma50Point) {
+                    lastEma50Point.value += (Math.random() - 0.5) * 0.02 * lastEma50Point.value;
+                    ema50Series.update(lastEma50Point);
+                }
+
+                if (lastEma20Point) {
+                    lastEma20Point.value += (Math.random() - 0.5) * 0.02 * lastEma20Point.value;
+                    ema20Series.update(lastEma20Point);
+                }
             }
         }
 
-        fetchInitialData(`http://localhost:8000/market/history?timeframe=${timeframe}&target=${target}`);
-        subscribeToUpdates(`http://localhost:8000/market/stream?timeframe=${timeframe}&target=${target}`);
-        setInterval(applyRandomFluctuations, 1000); // Apply fluctuation every second
+        fetchInitialData(`http://localhost:${port}/market/history?timeframe=${timeframe}&target=${target}`);
+        subscribeToUpdates(`http://localhost:${port}/market/stream?timeframe=${timeframe}&target=${target}`);
+        setInterval(applyRandomFluctuations, 1000);
     </script>
 </body>
 </html>

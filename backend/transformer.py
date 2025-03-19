@@ -30,12 +30,15 @@ class Transformer:
         self.record_table={f'{timeframe}:{target}':{
             'std_time':datetime.now().isoformat(sep=' ',timespec='seconds'),
             'unix_time':int(datetime.now().timestamp()),
-            'cycle_time':int(datetime.now().timestamp()),
             'open':0,
             'high':float('-inf'),
             'low':float('inf'),
             'close':0,
-            'ema':0
+            'ema_9':0,
+            'ema_20':0,
+            'ema_50':0,
+            'ema_200':0,
+            'signal':None
         } for timeframe in TIME_FRAMES for target in TARGET_MULTIPLIERS}
 
         self.series_table={f'{timeframe}:{target}':[] for timeframe in TIME_FRAMES for target in TARGET_MULTIPLIERS}
@@ -112,10 +115,9 @@ class Transformer:
         threading.Thread(target=run_app,daemon=True).start()
 
     def transform(self,time_frames,target_multipliers):
-        local_record=None
+        local_record,last_signal=None,None
 
         def is_time_to_update(last_reset_time,time_frame):
-            now=datetime.now()
             time_unit,time_step=time_frame.split('_')
             time_step=int(time_step)
 
@@ -130,15 +132,36 @@ class Transformer:
 
             return elapsed_time >= time_table.get(time_unit,0)
         
-        def estimate_periods(time_frame):
-            time_unit,time_step=time_frame.split('_')
-            time_step=int(time_step)
+        def get_ema(current_close,previous_close,time_frame,lookback=20):
+            time_unit,_=time_frame.split('_')
+            
+            rounds_per_minute=2.5
+            time_multipliers={'second':1/60,'minute':1,'hour':60,'day':1440}
 
-            rounds_per_minute=3
-            time_multipliers={'minute':2,'hour':135,'day':3300}
+            period=lookback*rounds_per_minute*time_multipliers.get(time_unit)
+            alpha=2/(period+1)
+            ema=current_close*alpha+(1-alpha)*previous_close
 
-            return rounds_per_minute*time_step*time_multipliers.get(time_unit)
+            return ema
+        
+        def get_signal(ema_9,ema_20,ema_50,ema_200):
+            nonlocal last_signal
+            signal=None
+            if ema_9>ema_20>ema_50>ema_200:
+                signal='BUY'
+            elif ema_9<ema_20<ema_50<ema_200:
+                signal='SELL'
+            elif ema_9>ema_20>ema_50:
+                signal='buy'
+            elif ema_9<ema_20<ema_50:
+                signal='sell'
 
+            if last_signal!=signal:
+                last_signal=signal
+
+            return signal
+
+        
         def update_metrics(record,target,time_frame):
             key=f'{time_frame}:{target}'
             target=float(target)
@@ -148,33 +171,34 @@ class Transformer:
             with self.lock:
                 entry=self.record_table.get(key)
 
-            Std_time,Unix_time,Cycle_time,Open,High,Low,Close,previous_ema=entry['std_time'],entry['unix_time'],entry['cycle_time'],entry['open'],entry['high'],entry['low'],entry['close'],entry['ema']
+            Std_time,Unix_time,Open,High,Low,Close,Ema_9_prev,Ema_20_prev,Ema_50_prev,Ema_200_prev,Signal=entry['std_time'],entry['unix_time'],entry['open'],entry['high'],entry['low'],entry['close'],entry['ema_9'],entry['ema_20'],entry['ema_50'],entry['ema_200'],entry['signal']
 
-            period=estimate_periods(time_frame)
-            alpha=2/(period+1)
-
-            Ema=alpha*Close+(1-alpha)*previous_ema
-
-            Std_time=datetime.now().isoformat(sep=' ',timespec='seconds')
-            Unix_time=int(datetime.now().timestamp())
             Close+=(target-1) if multiplier>target else -1
             High=max(Open,High,Close)
             Low=min(Open,Low,Close)
+        
+            Ema_9=get_ema(Close,Ema_9_prev,time_frame,9)
+            Ema_20=get_ema(Close,Ema_20_prev,time_frame,20)
+            Ema_50=get_ema(Close,Ema_50_prev,time_frame,50)
+            Ema_200=get_ema(Close,Ema_200_prev,time_frame,200)
 
-            
-            if is_time_to_update(Cycle_time,time_frame):
-                self.series_table[key].append(
-                    {'std_time':Std_time,'unix_time':Unix_time,'cycle_time':Cycle_time,'open':Open,'high':High,'low':Low,'close':Close,'ema':Ema}
-                    )
+
+            if is_time_to_update(Unix_time,time_frame):
                 
-                Cycle_time=int(datetime.now().timestamp())
+                Signal=get_signal(Ema_9,Ema_20,Ema_50,Ema_200)
+
+                self.series_table[key].append(
+                {'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'signal':Signal,'close':Close,'ema_9':round(Ema_9,2),'ema_20':round(Ema_20,2),'ema_50':round(Ema_50,2),'ema_200':round(Ema_200,2)}
+                )
+                
+                Std_time=datetime.now().isoformat(sep=' ',timespec='seconds')
+                Unix_time=int(datetime.now().timestamp())
                 Open=Close
                 High=Close
                 Low=Close
                 
             record={
-            'std_time':Std_time,'unix_time':Unix_time,'cycle_time':Cycle_time,'open':Open,'high':High,'low':Low,'close':Close
-            ,'ema':Ema}
+              'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'signal':Signal,'close':Close,'ema_9':round(Ema_9,2),'ema_20':round(Ema_20,2),'ema_50':round(Ema_50,2),'ema_200':round(Ema_200,2)}
             with self.lock:
                 for client_key,client_queue in list(self.clients):
                     if client_key==key:
