@@ -17,7 +17,7 @@ app=Flask(__name__)
 CORS(app)
 
 class Scraper:
-    def __init__(self,target_url:str,headless:bool=False,wait_time:int=10,retries:int=5)->None:
+    def __init__(self,target_url:str,headless:bool=False,backup:bool=False,wait_time:int=10,retries:int=5)->None:
 
         self.target_url=target_url
         self.headless=headless
@@ -29,6 +29,7 @@ class Scraper:
         
         self.round_id=0
         self.file_name=None
+        self.backup=backup
         self.folder_name='backup'
         self.base_file_name='file'
         self.record=None
@@ -157,7 +158,8 @@ class Scraper:
                 payouts_block=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))
                 if payouts_block:
                     print(f'{colors.green}connected to game engine successfully')
-                    self.manage_backup()
+                    if self.backup:
+                        self.manage_backup()
 
                 while True:
                     try:
