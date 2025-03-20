@@ -7,9 +7,10 @@ import argparse
 
 parser=argparse.ArgumentParser(description='for controlling the bots configuration parameters')
 parser.add_argument('--headless',action='store_true')
+parser.add_argument('--backup',action='store_true')
 parser_arguments=parser.parse_args()
 
-scraper=Scraper(target_url=MOZZART_URL,wait_time=30,headless=parser_arguments.headless)
+scraper=Scraper(target_url=MOZZART_URL,wait_time=30,headless=parser_arguments.headless,backup=parser_arguments.backup)
 
 scraper.folder_name='backup'
 scraper.base_file_name='mozzart_aviator'
