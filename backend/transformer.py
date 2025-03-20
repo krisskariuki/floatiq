@@ -34,6 +34,8 @@ class Transformer:
             'high':float('-inf'),
             'low':float('inf'),
             'close':0,
+            'close_t-n':0,
+            'momentum':0,
             'ema_9':0,
             'ema_20':0,
             'ema_50':0,
@@ -171,7 +173,7 @@ class Transformer:
             with self.lock:
                 entry=self.record_table.get(key)
 
-            Std_time,Unix_time,Open,High,Low,Close,Ema_9_prev,Ema_20_prev,Ema_50_prev,Ema_200_prev,Signal=entry['std_time'],entry['unix_time'],entry['open'],entry['high'],entry['low'],entry['close'],entry['ema_9'],entry['ema_20'],entry['ema_50'],entry['ema_200'],entry['signal']
+            Std_time,Unix_time,Open,High,Low,Close,Close_prev,Momentum,Ema_9_prev,Ema_20_prev,Ema_50_prev,Ema_200_prev,Signal=entry['std_time'],entry['unix_time'],entry['open'],entry['high'],entry['low'],entry['close'],entry['close_t-n'],entry['momentum'],entry['ema_9'],entry['ema_20'],entry['ema_50'],entry['ema_200'],entry['signal']
 
             Close+=(target-1) if multiplier>target else -1
             High=max(Open,High,Close)
@@ -184,21 +186,23 @@ class Transformer:
 
 
             if is_time_to_update(Unix_time,time_frame):
-                
                 Signal=get_signal(Ema_9,Ema_20,Ema_50,Ema_200)
+                Momentum=Close-Close_prev
 
                 self.series_table[key].append(
-                {'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'signal':Signal,'close':Close,'ema_9':round(Ema_9,2),'ema_20':round(Ema_20,2),'ema_50':round(Ema_50,2),'ema_200':round(Ema_200,2)}
+                {'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'signal':Signal,'close':Close,'close_t-n':Close_prev,'momentum':Momentum,'ema_9':round(Ema_9,2),'ema_20':round(Ema_20,2),'ema_50':round(Ema_50,2),'ema_200':round(Ema_200,2)}
                 )
                 
                 Std_time=datetime.now().isoformat(sep=' ',timespec='seconds')
                 Unix_time=int(datetime.now().timestamp())
+                Close_prev=Close
                 Open=Close
                 High=Close
                 Low=Close
                 
             record={
-              'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'signal':Signal,'close':Close,'ema_9':round(Ema_9,2),'ema_20':round(Ema_20,2),'ema_50':round(Ema_50,2),'ema_200':round(Ema_200,2)}
+                'std_time':Std_time,'unix_time':Unix_time,'open':Open,'high':High,'low':Low,'signal':Signal,'close':Close,'close_t-n':Close_prev,'momentum':Momentum,'ema_9':round(Ema_9,2),'ema_20':round(Ema_20,2),'ema_50':round(Ema_50,2),'ema_200':round(Ema_200,2)}
+            
             with self.lock:
                 for client_key,client_queue in list(self.clients):
                     if client_key==key:
