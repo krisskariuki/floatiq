@@ -14,6 +14,8 @@ import argparse
 parser=argparse.ArgumentParser(description='simulate historic data using')
 parser.add_argument('source',type=str)
 parser.add_argument('--unalive',action='store_false')
+parser.add_argument('--constant',action='store_true')
+parser.add_argument('--speed',type=float,default=20)
 parser_args=parser.parse_args()
 
 app = Flask(__name__)
@@ -76,8 +78,11 @@ class Simulator:
             std_time=datetime.now().isoformat(sep=' ',timespec='seconds') if self.run_live else recv_record[2]
             unix_time=int(datetime.now().timestamp()) if self.run_live else recv_record[3]
 
-            sleep_time=20*multiplier**0.2
+            constant_time=parser_args.speed
+            acceleration_time=parser_args.speed*multiplier**0.2
 
+            sleep_time=constant_time if parser_args.constant else acceleration_time
+            
             for client in list(self.clients):
                 try:
                     client.put(self.record)
