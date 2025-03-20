@@ -150,13 +150,13 @@ class Transformer:
             nonlocal last_signal
             signal=None
             if ema_9>ema_20>ema_50>ema_200:
-                signal='STRONG BUY'
+                signal='BUY LONG'
             elif ema_9<ema_20<ema_50<ema_200:
-                signal='STRONG SELL'
+                signal='SELL LONG'
             elif ema_9>ema_20>ema_50:
-                signal='BUY'
+                signal='BUY SHORT'
             elif ema_9<ema_20<ema_50:
-                signal='SELL'
+                signal='SELL SHORT'
 
             if last_signal!=signal:
                 last_signal=signal
