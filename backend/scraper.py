@@ -194,13 +194,16 @@ class Scraper:
                 autobet_start_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="auto-bet"]//div[@class="input-switch off"]')))
                 autocashout_start_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="cash-out-switcher"]//div[@class="input-switch off"]')))
                 
+                is_autocashout_active=True
+
                 if payouts_block:
                     print(f'{colors.green}connected to game engine successfully')
                     if self.backup:
                         self.manage_backup()
 
-                def automate_trade():    
-                    if self.active_trade:
+                def automate_trade():
+                    nonlocal is_autocashout_active
+                    if is_autocashout_active:
                         autobet_option.click()
                         autocashout_start_button.click()
 
@@ -219,19 +222,19 @@ class Scraper:
 
                         autobet_start_button.click()
 
-                        autocashout_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="cash-out-switcher"]//div[@class="input-switch"]')))
-                        autobet_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="auto-bet"]//div[@class="input-switch"]')))
-
-                        if not self.active_trade:
-                            autobet_stop_button.click()
-                            autocashout_stop_button.click()
-
+                        is_autocashout_active=False
+                        # autocashout_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="cash-out-switcher"]//div[@class="input-switch"]')))
+                        # autobet_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="auto-bet"]//div[@class="input-switch"]')))
 
                 while True:
                     try:
                         latest_multipliers=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
                         check_for_new_data(latest_multipliers)
-                        automate_trade()
+                        if self.active_trade:
+                            try:
+                                automate_trade()
+                            except:
+                                automate_trade()
 
                         time.sleep(1)
                     except:
