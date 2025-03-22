@@ -26,6 +26,8 @@ class Scraper:
 
         self.record_lock=threading.Lock()
         self.series_lock=threading.Lock()
+
+        self.active_trade=True
         
         self.round_id=0
         self.file_name=None
@@ -153,13 +155,49 @@ class Scraper:
                             self.clients.remove(client)
 
                     print(f'{colors.grey}round_id: {self.round_id} | std_time: {std_time} | multiplier: {multiplier}')
+
+
         def run_aviator():
             try:
                 payouts_block=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))
+                account_balance=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[contains(@class,"balance")]//span[contains(@class,"amount")]')))
+                account_balance=float(account_balance.text)
+                manualbet_option=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//button[normalize-space(text())="Bet"]')))
+                autobet_option=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//button[normalize-space(text())="Auto"]')))
+                amount_input,multiplier_input=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_all_elements_located((By.XPATH,'//*[@inputmode="decimal"]')))
+                autobet_start_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="auto-bet"]//div[@class="input-switch off"]')))
+                autocashout_start_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="cash-out-switcher"]//div[@class="input-switch off"]')))
+                
                 if payouts_block:
                     print(f'{colors.green}connected to game engine successfully')
                     if self.backup:
                         self.manage_backup()
+                    
+                if self.active_trade:
+                    autobet_option.click()
+                    autocashout_start_button.click()
+
+                    amount_value=amount_input.get_attribute('value')
+                    for _ in range(len(amount_value.split())):
+                        amount_input.send_keys(Keys.CONTROL,Keys.BACKSPACE)
+
+                    amount_input.send_keys('5.00'+Keys.RETURN)
+
+
+                    multiplier_value=multiplier_input.get_attribute('value')
+                    for _ in range(len(multiplier_value.split())):
+                        multiplier_input.send_keys(Keys.CONTROL,Keys.BACKSPACE)
+                    
+                    multiplier_input.send_keys('1.01'+Keys.RETURN)
+
+                    autobet_start_button.click()
+
+                    # autocashout_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="cash-out-switcher"]//div[@class="input-switch"]')))
+                    # autobet_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="auto-bet"]//div[@class="input-switch"]')))
+
+                    # if not self.active_trade:
+                    #     autobet_stop_button.click()
+
 
                 while True:
                     try:
