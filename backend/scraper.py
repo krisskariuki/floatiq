@@ -1,7 +1,7 @@
 from selenium_imports import *
 from datetime import datetime
 import pandas as pd
-from flask import Flask,Response,jsonify
+from flask import Flask,Response,jsonify,request
 from flask_cors import CORS
 from queue import Queue
 from waitress import serve
@@ -27,8 +27,10 @@ class Scraper:
         self.record_lock=threading.Lock()
         self.series_lock=threading.Lock()
 
-        self.active_trade=True
-        
+        self.active_trade=False
+        self.target_multiplier=1.01
+        self.bet_amount=5.00
+
         self.round_id=0
         self.file_name=None
         self.backup=backup
@@ -37,6 +39,9 @@ class Scraper:
         self.record=None
         self.series=[]
 
+        self.valid_accounts={
+            'kriss_kariuki':'Chri570ph3r.'
+        }
         self.clients=set()
         
         self.actions_array=[]
@@ -121,6 +126,27 @@ class Scraper:
                     yield f"data:{json.dumps(record,separators=(',',':'))}\n\n"
                     time.sleep(1)
             return Response(event_stream(),mimetype='text/event-stream')
+        
+        @app.route('/mozzart_aviator/trade',methods=['POST'])
+        def toggle_active_trade():
+            req=request.get_json()
+
+            username=req['username']
+            password=req['password']
+            bet_amount=req['bet_amount']
+            multiplier=req['multiplier']
+            active_trade=req['active_trade']
+
+            if password!=self.valid_accounts[username]:
+                print('bad account')
+                return 'bad account'
+            
+            self.active_trade=active_trade
+            self.target_multiplier=multiplier
+            self.bet_amount=bet_amount
+
+            return 'trade placed successfully'
+
 
         def start_server():
             serve(app,host='0.0.0.0',port=PRODUCER_PORT,channel_timeout=300,threads=50,backlog=1000,connection_limit=500)
@@ -172,37 +198,41 @@ class Scraper:
                     print(f'{colors.green}connected to game engine successfully')
                     if self.backup:
                         self.manage_backup()
-                    
-                if self.active_trade:
-                    autobet_option.click()
-                    autocashout_start_button.click()
 
-                    amount_value=amount_input.get_attribute('value')
-                    for _ in range(len(amount_value.split())):
-                        amount_input.send_keys(Keys.CONTROL,Keys.BACKSPACE)
+                def automate_trade():    
+                    if self.active_trade:
+                        autobet_option.click()
+                        autocashout_start_button.click()
 
-                    amount_input.send_keys('5.00'+Keys.RETURN)
+                        amount_value=amount_input.get_attribute('value')
+                        for _ in range(len(amount_value.split())):
+                            amount_input.send_keys(Keys.CONTROL,Keys.BACKSPACE)
+
+                        amount_input.send_keys(self.bet_amount+Keys.RETURN)
 
 
-                    multiplier_value=multiplier_input.get_attribute('value')
-                    for _ in range(len(multiplier_value.split())):
-                        multiplier_input.send_keys(Keys.CONTROL,Keys.BACKSPACE)
-                    
-                    multiplier_input.send_keys('1.01'+Keys.RETURN)
+                        multiplier_value=multiplier_input.get_attribute('value')
+                        for _ in range(len(multiplier_value.split())):
+                            multiplier_input.send_keys(Keys.CONTROL,Keys.BACKSPACE)
+                        
+                        multiplier_input.send_keys(self.target_multiplier+Keys.RETURN)
 
-                    autobet_start_button.click()
+                        autobet_start_button.click()
 
-                    # autocashout_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="cash-out-switcher"]//div[@class="input-switch"]')))
-                    # autobet_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="auto-bet"]//div[@class="input-switch"]')))
+                        autocashout_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="cash-out-switcher"]//div[@class="input-switch"]')))
+                        autobet_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="auto-bet"]//div[@class="input-switch"]')))
 
-                    # if not self.active_trade:
-                    #     autobet_stop_button.click()
+                        if not self.active_trade:
+                            autobet_stop_button.click()
+                            autocashout_stop_button.click()
 
 
                 while True:
                     try:
                         latest_multipliers=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
                         check_for_new_data(latest_multipliers)
+                        automate_trade()
+
                         time.sleep(1)
                     except:
                         raise
@@ -237,6 +267,10 @@ class Scraper:
         def click_from_list():
             element=WebDriverWait(self.driver,self.wait_time).until(EC.visibility_of_all_elements_located((By.XPATH,f'//*[@{action["attribute"]}]')))[action['choice_index']]
             element.click()
+        
+        def switch_to_iframe():
+            element=WebDriverWait(self.driver,self.wait_time).until(EC.element_to_be_clickable((By.XPATH,f'//*[@{action["attribute"]}]')))
+            self.driver.switch_to.iframe(element)
 
         def callback():
             if callable(action['callback']):
@@ -257,6 +291,7 @@ class Scraper:
             'click_from_list':click_from_list,
             'write':write,
             'send':send,
+            'switch_to_iframe':switch_to_iframe,
             'callback':callback
             }
         
