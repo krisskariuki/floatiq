@@ -40,9 +40,6 @@ class Scraper:
         self.record=None
         self.series=[]
 
-        self.valid_accounts={
-            'kriss_kariuki':'Chri570ph3r.'
-        }
         self.clients=set()
         
         self.actions_array=[]
