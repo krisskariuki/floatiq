@@ -17,20 +17,21 @@ app=Flask(__name__)
 CORS(app)
 
 class Scraper:
-    def __init__(self,target_url:str,headless:bool=False,backup:bool=False,wait_time:int=10,retries:int=5)->None:
+    def __init__(self,target_url:str,headless:bool=False,backup:bool=False,wait_time:int=10,retries:int=5,window_size=(800,1080))->None:
 
         self.target_url=target_url
         self.headless=headless
         self.wait_time=wait_time
         self.retries=retries
+        self.window_size=window_size
 
-        self.record_lock=threading.Lock()
-        self.series_lock=threading.Lock()
+        self.lock=threading.Lock()
 
         self.active_trade=False
         self.target_multiplier=1.01
         self.bet_amount=5.00
 
+        self.account_balance=0.00
         self.round_id=0
         self.file_name=None
         self.backup=backup
@@ -49,7 +50,7 @@ class Scraper:
         
     def start_driver(self):
         options=uc.ChromeOptions()
-        width,height=800,1080
+        width,height=self.window_size
 
         headmode_args=['--ignore-certificate-errors','--disable-notifications']
         headless_args = [
@@ -92,7 +93,7 @@ class Scraper:
                 print(f'{colors.green}backup file initialized: {self.file_name}')
 
     def save_record(self):
-        with self.record_lock:
+        with self.lock:
             if self.record and isinstance(self.record,dict):
                 pd.DataFrame([self.record]).to_csv(self.file_name,mode='a',index=False,header=False)
 
@@ -101,23 +102,23 @@ class Scraper:
         self.actions_array.append(action)
     
     def broadcast(self):      
-        @app.route('/mozzart_aviator/latest',methods=['GET'])
+        @app.route('/producer/aviator/latest',methods=['GET'])
         def get_latest():
-            with self.record_lock:
+            with self.lock:
                 return jsonify(self.record)
 
-        @app.route('/mozzart_aviator/history',methods=['GET'])
+        @app.route('/producer/aviator/history',methods=['GET'])
         def get_history():
-            with self.series_lock:
+            with self.lock:
                 return jsonify(self.series)
 
-        @app.route('/mozzart_aviator/stream',methods=['GET'])
+        @app.route('/producer/aviator/stream',methods=['GET'])
         def stream_data():
             def event_stream():
                 queue=Queue()
                 self.clients.add(queue)
 
-                with self.record_lock:
+                with self.lock:
                     if self.record:
                         yield f"data:{json.dumps(self.record,separators=(',',':'))}\n\n"
                 
@@ -125,25 +126,38 @@ class Scraper:
                     record=queue.get()
                     yield f"data:{json.dumps(record,separators=(',',':'))}\n\n"
                     time.sleep(1)
+
             return Response(event_stream(),mimetype='text/event-stream')
         
-        @app.route('/mozzart_aviator/trade',methods=['POST'])
+        @app.route('/producer/account/stream')
+        def stream_account():
+            local_balance=None
+
+            def event_stream():
+                nonlocal local_balance
+                while True:
+                    if local_balance!=self.account_balance:
+                        local_balance=self.account_balance
+
+                        yield f"data:{json.dumps(local_balance,separators=(',',':'))}\n\n"
+
+                    time.sleep(1)
+
+            return Response(event_stream(),mimetype='text/event-stream')
+
+
+        @app.route('/producer/account/trade',methods=['POST'])
         def toggle_active_trade():
             req=request.get_json()
 
-            username=req['username']
-            password=req['password']
             bet_amount=req['bet_amount']
             multiplier=req['multiplier']
             active_trade=req['active_trade']
 
-            if password!=self.valid_accounts[username]:
-                print('bad account')
-                return 'bad account'
-            
-            self.active_trade=active_trade
-            self.target_multiplier=multiplier
-            self.bet_amount=bet_amount
+            with self.lock:
+                self.active_trade=active_trade
+                self.target_multiplier=multiplier
+                self.bet_amount=bet_amount
 
             return 'trade placed successfully'
 
@@ -154,20 +168,20 @@ class Scraper:
         threading.Thread(target=start_server,daemon=True).start()
         
     def watch_aviator(self):
-        old=None
+        old_multiplier,old_balance=None,None
 
-        def check_for_new_data(recent):
-            nonlocal old
+        def track_multiplier(recent_multiplier):
+            nonlocal old_multiplier
 
-            if old!=recent:
-                    old=recent
+            if old_multiplier!=recent_multiplier:
+                    old_multiplier=recent_multiplier
                     self.round_id+=1
-                    multiplier=float(recent[0].text.replace('x','').replace(',',''))
+                    multiplier=float(recent_multiplier[0].text.replace('x','').replace(',',''))
                     std_time=datetime.now().isoformat(sep=' ',timespec='seconds')
                     unix_time=int(datetime.now().timestamp())
 
                     data={'round_id':self.round_id,'multiplier':multiplier,'std_time':std_time,'unix_time':unix_time}
-                    with self.record_lock,self.series_lock:
+                    with self.lock:
                         self.record=data
                         self.series.append(data)
                         
@@ -182,12 +196,24 @@ class Scraper:
 
                     print(f'{colors.grey}round_id: {self.round_id} | std_time: {std_time} | multiplier: {multiplier}')
 
+        def track_account_balance(recent_balance):
+            nonlocal old_balance
+            recent_balance=float(recent_balance.text.replace(',','').strip())
+
+            if old_balance!=recent_balance:
+                old_balance=recent_balance
+
+                with self.lock:
+                    self.account_balance=recent_balance
+                
+                print(f'balance: {self.account_balance}')
+
 
         def run_aviator():
             try:
                 payouts_block=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))
-                account_balance=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[contains(@class,"balance")]//span[contains(@class,"amount")]')))
-                account_balance=float(account_balance.text)
+                account_balance_element=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[contains(@class,"balance")]//span[contains(@class,"amount")]')))
+                # account_balance=float(account_balance.text)
                 manualbet_option=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//button[normalize-space(text())="Bet"]')))
                 autobet_option=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//button[normalize-space(text())="Auto"]')))
                 amount_input,multiplier_input=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_all_elements_located((By.XPATH,'//*[@inputmode="decimal"]')))
@@ -229,12 +255,17 @@ class Scraper:
                 while True:
                     try:
                         latest_multipliers=self.driver.find_element(By.CLASS_NAME,'payouts-block').find_elements(By.CLASS_NAME,'bubble-multiplier')
-                        check_for_new_data(latest_multipliers)
+                        latest_balance=self.driver.find_element(By.XPATH,'//div[contains(@class,"balance")]//span[contains(@class,"amount")]')
+
+                        track_multiplier(latest_multipliers)
+                        track_account_balance(latest_balance)
+
                         if self.active_trade:
                             try:
                                 automate_trade()
                             except:
                                 automate_trade()
+
 
                         time.sleep(1)
                     except:
@@ -273,7 +304,7 @@ class Scraper:
         
         def switch_to_iframe():
             element=WebDriverWait(self.driver,self.wait_time).until(EC.element_to_be_clickable((By.XPATH,f'//*[@{action["attribute"]}]')))
-            self.driver.switch_to.iframe(element)
+            self.driver.switch_to.frame(element)
 
         def callback():
             if callable(action['callback']):
