@@ -209,8 +209,6 @@ class Scraper:
         def run_aviator():
             try:
                 payouts_block=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//*[@class="payouts-block"]')))
-                account_balance_element=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[contains(@class,"balance")]//span[contains(@class,"amount")]')))
-                # account_balance=float(account_balance.text)
                 manualbet_option=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//button[normalize-space(text())="Bet"]')))
                 autobet_option=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//button[normalize-space(text())="Auto"]')))
                 amount_input,multiplier_input=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_all_elements_located((By.XPATH,'//*[@inputmode="decimal"]')))
@@ -226,6 +224,7 @@ class Scraper:
 
                 def automate_trade():
                     nonlocal is_autocashout_active
+
                     if is_autocashout_active:
                         autobet_option.click()
                         autocashout_start_button.click()
@@ -236,7 +235,6 @@ class Scraper:
 
                         amount_input.send_keys(self.bet_amount+Keys.RETURN)
 
-
                         multiplier_value=multiplier_input.get_attribute('value')
                         for _ in range(len(multiplier_value.split())):
                             multiplier_input.send_keys(Keys.CONTROL,Keys.BACKSPACE)
@@ -245,9 +243,10 @@ class Scraper:
 
                         autobet_start_button.click()
 
-                        is_autocashout_active=False
-                        # autocashout_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="cash-out-switcher"]//div[@class="input-switch"]')))
-                        # autobet_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="auto-bet"]//div[@class="input-switch"]')))
+
+                    is_autocashout_active=False
+                    # autocashout_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="cash-out-switcher"]//div[@class="input-switch"]')))
+                    # autobet_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="auto-bet"]//div[@class="input-switch"]')))
 
                 while True:
                     try:
