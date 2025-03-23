@@ -6,6 +6,8 @@ load_dotenv()
 
 MOZZART_URL=os.getenv('MOZZART_URL','https://www.mozzartbet.co.ke/en#/casino')
 BETIKA_URL=os.getenv('BETIKA_URL','https://www.betika.com/en-ke/')
+BET22_URL=os.getenv('_22BET_URL','https://22bet.co.ke/')
+
 DY68F_URL=os.getenv('DY68F','https://a.dy68fo0tball.com/#/pages/login/index')
 
 TARGET_MULTIPLIERS=os.getenv('TARGET_MULTIPLIERS',"2.00,3.00,5.00,10.00,15.00,20.00,25.00,30.00,35.00,40.00,45.00,50.00").split(',')
