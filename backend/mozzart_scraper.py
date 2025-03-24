@@ -13,7 +13,7 @@ parser.add_argument('--password',default=MOZZART_MASTER_PASSWORD)
 
 parser_arguments=parser.parse_args()
 
-scraper=Scraper(target_url=MOZZART_URL,wait_time=30,headless=parser_arguments.headless,backup=parser_arguments.backup)
+scraper=Scraper(target_url=MOZZART_URL,url_identifier='mozzart',wait_time=30,headless=parser_arguments.headless,backup=parser_arguments.backup)
 
 scraper.folder_name='backup'
 scraper.base_file_name='mozzart_aviator'

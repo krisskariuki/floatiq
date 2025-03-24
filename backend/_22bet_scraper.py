@@ -10,7 +10,7 @@ parser.add_argument('--headless',action='store_true')
 parser.add_argument('--backup',action='store_true')
 parser_arguments=parser.parse_args()
 
-scraper=Scraper(target_url=BET22_URL,wait_time=30,headless=parser_arguments.headless,backup=parser_arguments.backup,window_size=(1200,800))
+scraper=Scraper(target_url=BET22_URL,url_identifier='_22bet',wait_time=30,headless=parser_arguments.headless,backup=parser_arguments.backup,window_size=(1200,800))
 
 scraper.folder_name='backup'
 scraper.base_file_name='betika_aviator'

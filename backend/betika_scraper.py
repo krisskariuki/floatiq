@@ -13,7 +13,7 @@ parser.add_argument('--phone',default=BETIKA_KRISS_PHONE)
 parser.add_argument('--password',default=BETIKA_KRISS_PASSWORD)
 parser_arguments=parser.parse_args()
 
-scraper=Scraper(target_url=BETIKA_URL,wait_time=30,headless=parser_arguments.headless,backup=parser_arguments.backup,window_size=(1200,800))
+scraper=Scraper(target_url=BETIKA_URL,wait_time=30,url_identifier='betika',headless=parser_arguments.headless,backup=parser_arguments.backup,window_size=(1200,800))
 
 scraper.folder_name='backup'
 scraper.base_file_name='betika_aviator'

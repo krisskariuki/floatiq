@@ -1,6 +1,8 @@
 from flask import Flask,request,jsonify
 from flask_cors import CORS
 from utils import main_thread
+from config import ENTRY_PORT
+from waitress import serve
 import subprocess
 import threading
 
@@ -12,7 +14,7 @@ def main():
     game_providers_table={
         'mozzartbet':'mozzart_scraper.py',
         'betika':'betika_scraper.py',
-        '22bet':'22bet_scraper.py'
+        '22bet':'_22bet_scraper.py'
     }
 
     @app.route('/floatiq/login',methods=['POST'])
@@ -30,7 +32,7 @@ def main():
 
         return 'request received'
     
-    app.run(port='8888')
+    serve(app,host='0.0.0.0',port=ENTRY_PORT,threads=50,backlog=1000,connection_limit=500)
 
 
 if __name__=='__main__':

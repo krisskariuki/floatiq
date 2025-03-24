@@ -17,7 +17,7 @@ app=Flask(__name__)
 CORS(app)
 
 class Scraper:
-    def __init__(self,target_url:str,headless:bool=False,backup:bool=False,wait_time:int=10,retries:int=5,window_size=(800,1080))->None:
+    def __init__(self,target_url,url_identifier,headless=False,backup=False,wait_time=10,retries=5,window_size=(800,1080)):
 
         self.target_url=target_url
         self.headless=headless
@@ -27,6 +27,7 @@ class Scraper:
 
         self.lock=threading.Lock()
 
+        self.url_identifier=url_identifier
         self.active_trade=None
         self.start_trade_activity=False
         self.stop_trade_activity=False
@@ -102,17 +103,17 @@ class Scraper:
         self.actions_array.append(action)
     
     def broadcast(self):      
-        @app.route('/producer/aviator/latest',methods=['GET'])
+        @app.route(f'/{self.url_identifier}/aviator/latest',methods=['GET'])
         def get_latest():
             with self.lock:
                 return jsonify(self.record)
 
-        @app.route('/producer/aviator/history',methods=['GET'])
+        @app.route(f'/{self.url_identifier}/aviator/history',methods=['GET'])
         def get_history():
             with self.lock:
                 return jsonify(self.series)
 
-        @app.route('/producer/aviator/stream',methods=['GET'])
+        @app.route(f'/{self.url_identifier}/aviator/stream',methods=['GET'])
         def stream_data():
             def event_stream():
                 queue=Queue()
@@ -129,7 +130,7 @@ class Scraper:
 
             return Response(event_stream(),mimetype='text/event-stream')
         
-        @app.route('/producer/account/stream')
+        @app.route(f'/{self.url_identifier}/account/stream')
         def stream_account():
             local_balance=None
 
@@ -146,7 +147,7 @@ class Scraper:
             return Response(event_stream(),mimetype='text/event-stream')
 
 
-        @app.route('/producer/account/trade/start',methods=['POST'])
+        @app.route(f'/{self.url_identifier}/account/trade/start',methods=['POST'])
         def start_trade():
             data=request.get_json()
 
@@ -158,7 +159,7 @@ class Scraper:
 
             return 'trade placed successfully'
         
-        @app.route('/producer/account/trade/stop',methods=['POST'])
+        @app.route(f'/{self.url_identifier}/account/trade/stop',methods=['POST'])
         def stop_trade():
             with self.lock:
                 self.active_trade='stop'
@@ -199,7 +200,7 @@ class Scraper:
                         except:
                             self.clients.remove(client)
 
-                    print(f'{colors.grey}round_id: {self.round_id} | std_time: {std_time} | multiplier: {multiplier}')
+                    # print(f'{colors.grey}round_id: {self.round_id} | std_time: {std_time} | multiplier: {multiplier}')
 
         def track_account_balance(recent_balance):
             nonlocal old_balance
@@ -211,7 +212,7 @@ class Scraper:
                 with self.lock:
                     self.account_balance=recent_balance
                 
-                print(f'balance: {self.account_balance}')
+                # print(f'balance: {self.account_balance}')
 
 
         def run_aviator():
