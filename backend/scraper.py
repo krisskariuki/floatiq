@@ -27,9 +27,12 @@ class Scraper:
 
         self.lock=threading.Lock()
 
-        self.active_trade=False
-        self.target_multiplier=1.01
-        self.bet_amount=5.00
+        self.active_trade=None
+        self.start_trade_activity=False
+        self.stop_trade_activity=False
+
+        self.target_multiplier=5.25
+        self.bet_amount=3.14
 
         self.account_balance=0.00
         self.round_id=0
@@ -143,24 +146,29 @@ class Scraper:
             return Response(event_stream(),mimetype='text/event-stream')
 
 
-        @app.route('/producer/account/trade',methods=['POST'])
-        def toggle_active_trade():
-            req=request.get_json()
-
-            bet_amount=req['bet_amount']
-            multiplier=req['multiplier']
-            active_trade=req['active_trade']
+        @app.route('/producer/account/trade/start',methods=['POST'])
+        def start_trade():
+            data=request.get_json()
 
             with self.lock:
-                self.active_trade=active_trade
-                self.target_multiplier=multiplier
-                self.bet_amount=bet_amount
+                self.target_multiplier=data['multiplier']
+                self.bet_amount=data['bet_amount']
+                self.active_trade='start'
+                self.start_trade_activity=True
+
+            return 'trade placed successfully'
+        
+        @app.route('/producer/account/trade/stop',methods=['POST'])
+        def stop_trade():
+            with self.lock:
+                self.active_trade='stop'
+                self.stop_trade_activity=True
 
             return 'trade placed successfully'
 
 
         def start_server():
-            serve(app,host='0.0.0.0',port=PRODUCER_PORT,channel_timeout=300,threads=50,backlog=1000,connection_limit=500)
+            serve(app,host='0.0.0.0',port=PRODUCER_PORT,channel_timeout=600,threads=50,backlog=1000,connection_limit=500)
         
         threading.Thread(target=start_server,daemon=True).start()
         
@@ -215,38 +223,44 @@ class Scraper:
                 autobet_start_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="auto-bet"]//div[@class="input-switch off"]')))
                 autocashout_start_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="cash-out-switcher"]//div[@class="input-switch off"]')))
                 
-                is_autocashout_active=True
 
                 if payouts_block:
                     print(f'{colors.green}connected to game engine successfully')
                     if self.backup:
                         self.manage_backup()
 
-                def automate_trade():
-                    nonlocal is_autocashout_active
-
-                    if is_autocashout_active:
+                def start_trade():
+                    if self.start_trade_activity:
                         autobet_option.click()
                         autocashout_start_button.click()
 
                         amount_value=amount_input.get_attribute('value')
                         for _ in range(len(amount_value.split())):
                             amount_input.send_keys(Keys.CONTROL,Keys.BACKSPACE)
-
-                        amount_input.send_keys(self.bet_amount+Keys.RETURN)
+                        amount_input.send_keys(self.bet_amount)
 
                         multiplier_value=multiplier_input.get_attribute('value')
                         for _ in range(len(multiplier_value.split())):
                             multiplier_input.send_keys(Keys.CONTROL,Keys.BACKSPACE)
-                        
-                        multiplier_input.send_keys(self.target_multiplier+Keys.RETURN)
+                        multiplier_input.send_keys(self.target_multiplier)
 
                         autobet_start_button.click()
 
 
-                    is_autocashout_active=False
-                    # autocashout_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="cash-out-switcher"]//div[@class="input-switch"]')))
-                    # autobet_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="auto-bet"]//div[@class="input-switch"]')))
+                    self.start_trade_activity=False
+                    # autobet_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="auto-bet"]//div[@class="input-switch"]')) )
+                
+                def stop_trade():
+                    if self.stop_trade_activity:
+                        # cashout_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//*[@class="btn btn-warning cashout ng-star-inserted"]')))
+                        
+                        cancel_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//*[@class="btn btn-danger bet ng-star-inserted"]')))
+                        cancel_button.click()
+
+                        autocashout_stop_button=WebDriverWait(self.driver,self.wait_time).until(EC.presence_of_element_located((By.XPATH,'//div[@class="cash-out-switcher"]//div[@class="input-switch"]')))
+                        autocashout_stop_button.click()
+                    
+                    self.stop_trade_activity=False
 
                 while True:
                     try:
@@ -256,14 +270,21 @@ class Scraper:
                         track_multiplier(latest_multipliers)
                         track_account_balance(latest_balance)
 
-                        if self.active_trade:
-                            try:
-                                automate_trade()
-                            except:
-                                automate_trade()
-
+                        with self.lock:
+                            if self.active_trade=='start':
+                                try:
+                                    start_trade()
+                                except:
+                                    start_trade()
+                            
+                            elif self.active_trade=='stop':
+                                try:
+                                    stop_trade()
+                                except:
+                                    stop_trade()
 
                         time.sleep(1)
+
                     except:
                         raise
             except Exception as e:
